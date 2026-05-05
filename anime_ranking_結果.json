@@ -1,0 +1,267 @@
+{
+  "fetched_at": "2026-05-04 11:36 UTC",
+  "mal_top_airing": [
+    {
+      "rank": 1,
+      "title": "Steel Ball Run: JoJo no Kimyou na Bouken",
+      "score": "9.14"
+    },
+    {
+      "rank": 2,
+      "title": "Re:Zero kara Hajimeru Isekai Seikatsu 4th Season",
+      "score": "8.92"
+    },
+    {
+      "rank": 3,
+      "title": "Tongari Boushi no Atelier",
+      "score": "8.76"
+    },
+    {
+      "rank": 4,
+      "title": "One Piece",
+      "score": "8.73"
+    },
+    {
+      "rank": 5,
+      "title": "Chiikawa",
+      "score": "8.61"
+    },
+    {
+      "rank": 6,
+      "title": "Tian Guan Cifu Short Films",
+      "score": "8.50"
+    },
+    {
+      "rank": 7,
+      "title": "Xian Ni",
+      "score": "8.50"
+    },
+    {
+      "rank": 8,
+      "title": "Nippon Sangoku",
+      "score": "8.46"
+    },
+    {
+      "rank": 9,
+      "title": "Dorohedoro Season 2",
+      "score": "8.43"
+    },
+    {
+      "rank": 10,
+      "title": "Tunshi Xingkong 4th Season",
+      "score": "8.36"
+    },
+    {
+      "rank": 11,
+      "title": "Doupo Cangqiong: Nian Fan",
+      "score": "8.35"
+    },
+    {
+      "rank": 12,
+      "title": "Mushen Ji",
+      "score": "8.30"
+    },
+    {
+      "rank": 13,
+      "title": "Dr. Stone: Science Future Part 3",
+      "score": "8.29"
+    },
+    {
+      "rank": 14,
+      "title": "Tsue to Tsurugi no Wistoria Season 2",
+      "score": "8.21"
+    },
+    {
+      "rank": 15,
+      "title": "Meitantei Conan",
+      "score": "8.18"
+    },
+    {
+      "rank": 16,
+      "title": "Guangyin Zhi Wai",
+      "score": "8.16"
+    },
+    {
+      "rank": 17,
+      "title": "Holo no Graffiti",
+      "score": "8.15"
+    },
+    {
+      "rank": 18,
+      "title": "Tensei shitara Slime Datta Ken 4th Season",
+      "score": "8.13"
+    },
+    {
+      "rank": 19,
+      "title": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 4th Season: 2-nensei-hen 1 Gakki",
+      "score": "8.13"
+    },
+    {
+      "rank": 20,
+      "title": "Diamond no Ace: Act II Second Season",
+      "score": "8.07"
+    }
+  ],
+  "anilist_spring_2026_popular": [
+    {
+      "rank": 1,
+      "title_ja": "とんがり帽子のアトリエ",
+      "title_en": "Tongari Boushi no Atelier",
+      "score": 86,
+      "popularity": 120373,
+      "trending": 119
+    },
+    {
+      "rank": 2,
+      "title_ja": "Re:ゼロから始める異世界生活 4th season",
+      "title_en": "Re:Zero kara Hajimeru Isekai Seikatsu 4th Season",
+      "score": 87,
+      "popularity": 79917,
+      "trending": 58
+    },
+    {
+      "rank": 3,
+      "title_ja": "ようこそ実力至上主義の教室へ 4th Season 2年生編1学期",
+      "title_en": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e 4th Season 2-nensei-hen Ichi Gakki",
+      "score": 79,
+      "popularity": 74573,
+      "trending": 46
+    },
+    {
+      "rank": 4,
+      "title_ja": "転生したらスライムだった件 第4期",
+      "title_en": "Tensei Shitara Slime Datta Ken 4th Season",
+      "score": 80,
+      "popularity": 72929,
+      "trending": 37
+    },
+    {
+      "rank": 5,
+      "title_ja": "黄泉のツガイ",
+      "title_en": "Yomi no Tsugai",
+      "score": 78,
+      "popularity": 71236,
+      "trending": 144
+    },
+    {
+      "rank": 6,
+      "title_ja": "杖と剣のウィストリア Season2",
+      "title_en": "Tsue to Tsurugi no Wistoria Season 2",
+      "score": 80,
+      "popularity": 60166,
+      "trending": 200
+    },
+    {
+      "rank": 7,
+      "title_ja": "お隣の天使様にいつの間にか駄目人間にされていた件 第2期",
+      "title_en": "Otonari no Tenshi-sama ni Itsunomanika Dame Ningen ni Sareteita Ken 2nd Season",
+      "score": 78,
+      "popularity": 53078,
+      "trending": 33
+    },
+    {
+      "rank": 8,
+      "title_ja": "Dr.STONE SCIENCE FUTURE 3クール",
+      "title_en": "Dr. STONE: SCIENCE FUTURE Part 3",
+      "score": 81,
+      "popularity": 48711,
+      "trending": 53
+    },
+    {
+      "rank": 9,
+      "title_ja": "マリッジトキシン",
+      "title_en": "MARRIAGETOXIN",
+      "score": 75,
+      "popularity": 43078,
+      "trending": 24
+    },
+    {
+      "rank": 10,
+      "title_ja": "クラスで２番目に可愛い女の子と友だちになった",
+      "title_en": "Class de 2-banme ni Kawaii Onnanoko to Tomodachi ni Natta",
+      "score": 76,
+      "popularity": 39734,
+      "trending": 45
+    },
+    {
+      "rank": 11,
+      "title_ja": "氷の城壁",
+      "title_en": "Koori no Jouheki",
+      "score": 76,
+      "popularity": 33388,
+      "trending": 42
+    },
+    {
+      "rank": 12,
+      "title_ja": "オタクに優しいギャルはいない!?",
+      "title_en": "Otaku ni Yasashii Gal wa Inai!?",
+      "score": 74,
+      "popularity": 32732,
+      "trending": 28
+    },
+    {
+      "rank": 13,
+      "title_ja": "ドロヘドロ Season 2",
+      "title_en": "Dorohedoro Season 2",
+      "score": 80,
+      "popularity": 31452,
+      "trending": 18
+    },
+    {
+      "rank": 14,
+      "title_ja": "姫騎士は蛮族の嫁",
+      "title_en": "Hime Kishi wa Barbaroi no Yome",
+      "score": 67,
+      "popularity": 29153,
+      "trending": 23
+    },
+    {
+      "rank": 15,
+      "title_ja": "最強の王様、二度目の人生は 何をする? 第2期",
+      "title_en": "Saikyou no Ousama, Nidome no Jinsei wa Nani wo Suru? 2nd Season",
+      "score": 55,
+      "popularity": 29051,
+      "trending": 20
+    },
+    {
+      "rank": 16,
+      "title_ja": "春夏秋冬代行者 春の舞",
+      "title_en": "Shunkashuutou Daikousha: Haru no Mai",
+      "score": 75,
+      "popularity": 28183,
+      "trending": 35
+    },
+    {
+      "rank": 17,
+      "title_ja": "異世界のんびり農家２",
+      "title_en": "Isekai Nonbiri Nouka 2",
+      "score": 74,
+      "popularity": 27703,
+      "trending": 24
+    },
+    {
+      "rank": 18,
+      "title_ja": "あかね噺",
+      "title_en": "Akane-banashi",
+      "score": 76,
+      "popularity": 27564,
+      "trending": 48
+    },
+    {
+      "rank": 19,
+      "title_ja": "日本三國",
+      "title_en": "Nippon Sangoku",
+      "score": 80,
+      "popularity": 27243,
+      "trending": 89
+    },
+    {
+      "rank": 20,
+      "title_ja": "NEEDY GIRL OVERDOSE",
+      "title_en": "NEEDY GIRL OVERDOSE",
+      "score": 68,
+      "popularity": 27176,
+      "trending": 35
+    }
+  ]
+}
