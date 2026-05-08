@@ -4,8 +4,13 @@ import DiagnosisWizard from "@/components/DiagnosisWizard";
 
 export const metadata: Metadata = {
   title: "アニメ診断 - AniTabi",
-  description:
-    "3つの質問に答えるだけで、あなたにぴったりのアニメが見つかる！サクッと診断モード。",
+  description: "3つの質問に答えるだけで、あなたにぴったりのアニメが見つかる！サクッと診断モード。",
+  openGraph: {
+    title: "アニメ診断 - AniTabi",
+    description: "3つの質問に答えるだけで、あなたにぴったりのアニメが見つかる！サクッと診断モード。",
+    url: "https://anitabi.site/diagnosis",
+    type: "website",
+  },
 };
 
 export default function DiagnosisPage() {

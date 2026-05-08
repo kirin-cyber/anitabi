@@ -41,7 +41,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-text-sub">サイトURL</p>
-                  <p className="mt-1 font-medium">https://anitabi.jp（予定）</p>
+                  <p className="mt-1 font-medium">https://anitabi.site</p>
                 </div>
               </div>
             </div>

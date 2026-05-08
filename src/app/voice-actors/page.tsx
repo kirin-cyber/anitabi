@@ -6,6 +6,12 @@ import { getVoiceActors } from "@/lib/notion";
 export const metadata: Metadata = {
   title: "声優一覧 - AniTabi",
   description: "今季出演中の声優やレジェンド声優をチェック。ランク別に検索・絞り込みできます。",
+  openGraph: {
+    title: "声優一覧 - AniTabi",
+    description: "今季出演中の声優やレジェンド声優をチェック。ランク別に検索・絞り込みできます。",
+    url: "https://anitabi.site/voice-actors",
+    type: "website",
+  },
 };
 
 export default async function VoiceActorsPage() {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -10,10 +11,18 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://anitabi.site"),
   title: "AniTabi - あなたにぴったりのアニメを見つけよう",
-  description:
-    "ジャンル診断・声優検索・最新アニメ情報をまとめたアニメ紹介サイト",
+  description: "ジャンル診断・声優検索・最新アニメ情報をまとめたアニメ紹介サイト",
+  openGraph: {
+    siteName: "AniTabi",
+    locale: "ja_JP",
+    type: "website",
+  },
 };
+
+const gaId = process.env.NEXT_PUBLIC_GA_ID;
+const isProd = process.env.NODE_ENV === "production";
 
 export default function RootLayout({
   children,
@@ -21,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${notoSansJP.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        {isProd && gaId && <GoogleAnalytics gaId={gaId} />}
         <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>

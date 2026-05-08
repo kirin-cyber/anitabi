@@ -8,8 +8,13 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "アニメ一覧 - AniTabi",
-  description:
-    "年代別のアニメをジャンル・話数・評価で絞り込み。あなたの好みのアニメを探そう。",
+  description: "年代別のアニメをジャンル・話数・評価で絞り込み。あなたの好みのアニメを探そう。",
+  openGraph: {
+    title: "アニメ一覧 - AniTabi",
+    description: "年代別のアニメをジャンル・話数・評価で絞り込み。あなたの好みのアニメを探そう。",
+    url: "https://anitabi.site/anime",
+    type: "website",
+  },
 };
 
 const GENRE_MAP: Record<string, string> = {

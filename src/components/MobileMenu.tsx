@@ -13,9 +13,12 @@ export default function MobileMenu() {
   const NAV_LINKS = [
     { href: "/", label: t("nav", "home") },
     { href: "/anime", label: t("nav", "anime") },
+    { href: "/schedule", label: t("nav", "schedule") },
+    { href: "/ranking", label: t("nav", "ranking") },
     { href: "/diagnosis", label: t("nav", "diagnosis") },
     { href: "/voice-actors", label: t("nav", "voiceActors") },
     { href: "/news", label: t("nav", "news") },
+    { href: "/watchlist", label: t("nav", "watchlist") },
   ];
 
   return (

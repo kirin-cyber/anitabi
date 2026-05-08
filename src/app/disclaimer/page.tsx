@@ -71,7 +71,7 @@ export default function DisclaimerPage() {
               <h2 className="mb-2 text-lg font-bold">6. お問い合わせ</h2>
               <div className="mt-2 rounded-xl border border-text-sub/15 bg-card p-4 text-text-sub">
                 <p>運営者: kirin</p>
-                <p>サイトURL: https://anitabi.jp（予定）</p>
+                <p>サイトURL: https://anitabi.site</p>
                 <p>
                   メール:{" "}
                   <a

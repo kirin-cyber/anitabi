@@ -16,7 +16,8 @@
     "featuredTitle": "🔥 今季の注目作品",
     "gridTitle": "2026年春 放送中アニメ一覧",
     "moreBtn": "もっと見る → アニメ一覧へ",
-    "episodes": "全{count}話"
+    "episodes": "全{count}話",
+    "countUnit": "作品"
   },
   "anime": {
     "title": "アニメ一覧",

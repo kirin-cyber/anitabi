@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import AnimeImage from "@/components/AnimeImage";
-import { getAnimeById, searchAnimeByGenres } from "@/lib/anilist";
+import ShareButtons from "@/components/ShareButtons";
+import WatchlistButton from "@/components/WatchlistButton";
+import { getAnimeById, searchAnimeByGenres, getAnimeByStudio, getVoiceActorWorks } from "@/lib/anilist";
 import { getAnimeDescriptionByTitle } from "@/lib/annict";
 import { getVoiceActors } from "@/lib/notion";
 import { GENRES } from "@/constants/genres";
@@ -69,18 +71,32 @@ export default async function AnimeDetailPage({ params }: Props) {
         ? `${anime.seasonYear}年`
         : "";
 
-  // Annict から日本語あらすじを取得（タイトルで検索）
-  const annictDescription = await getAnimeDescriptionByTitle(title);
+  // 声優情報（日本語声優がいるキャラのみ）
+  const characters = anime.characters.edges
+    .filter((e) => e.voiceActors.length > 0)
+    .slice(0, 6);
 
-  // Notionの声優一覧をフェッチしてname→idマップを構築
+  // 並列フェッチ: あらすじ・声優DB・関連作品（ジャンル・スタジオ・声優）
   const normalize = (s: string) => s.replace(/\s/g, "");
-  let vaNameMap = new Map<string, string>();
-  try {
-    const notionVAs = await getVoiceActors();
-    vaNameMap = new Map(notionVAs.map((va) => [normalize(va.name), va.id]));
-  } catch {
-    // 声優データ取得失敗時はリンクなしで表示
-  }
+  const firstVaName =
+    characters[0]?.voiceActors[0]?.name.native ??
+    characters[0]?.voiceActors[0]?.name.full ??
+    "";
+
+  const [annictDescription, notionVAs, genreRelated, studioRelated, vaWorks] =
+    await Promise.all([
+      getAnimeDescriptionByTitle(title),
+      getVoiceActors().catch(() => []),
+      anime.genres.length > 0
+        ? searchAnimeByGenres(anime.genres.slice(0, 2), 10)
+        : Promise.resolve([]),
+      studio ? getAnimeByStudio(studio) : Promise.resolve([]),
+      firstVaName ? getVoiceActorWorks(firstVaName) : Promise.resolve(null),
+    ]);
+
+  const vaNameMap = new Map(
+    notionVAs.map((va) => [normalize(va.name), va.id]),
+  );
 
   // HTMLタグ・エンティティを除去するユーティリティ
   function stripHtml(text: string): string {
@@ -103,29 +119,69 @@ export default async function AnimeDetailPage({ params }: Props) {
       ? stripHtml(anime.description)
       : "";
 
-  // 関連作品: 同ジャンルからAniList APIで3件取得
-  let related: { id: number; title: string; image: string; score: number; genres: string[] }[] = [];
-  try {
-    if (anime.genres.length > 0) {
-      const relatedRaw = await searchAnimeByGenres(anime.genres.slice(0, 2), 10);
-      related = relatedRaw
-        .filter((r) => r.id !== anime.id)
-        .slice(0, 3)
-        .map((r) => ({
-          id: r.id,
-          title: r.title.native ?? `ID:${r.id}`,
-          image: r.coverImage?.large ?? "",
-          score: r.averageScore ?? 0,
-          genres: r.genres.map(mapGenre),
-        }));
-    }
-  } catch {
-    // 関連作品の取得失敗は無視
+  // 強化版関連作品: ジャンル・スタジオ・声優出演から重複除去して6件
+  type RelatedReason = "genre" | "studio" | "voiceActor";
+  interface EnhancedRelated {
+    id: number;
+    title: string;
+    image: string;
+    score: number;
+    genres: string[];
+    reasons: RelatedReason[];
   }
 
-  // 声優情報（日本語声優がいるキャラのみ）
-  const characters = anime.characters.edges
-    .filter((e) => e.voiceActors.length > 0)
+  const relatedMap = new Map<number, EnhancedRelated>();
+  const addRelated = (
+    id: number,
+    title: string,
+    image: string,
+    score: number,
+    genres: string[],
+    reason: RelatedReason,
+  ) => {
+    if (id === anime.id) return;
+    if (relatedMap.has(id)) {
+      relatedMap.get(id)!.reasons.push(reason);
+    } else {
+      relatedMap.set(id, { id, title, image, score, genres, reasons: [reason] });
+    }
+  };
+
+  for (const r of genreRelated) {
+    addRelated(
+      r.id,
+      r.title.native ?? `ID:${r.id}`,
+      r.coverImage?.large ?? "",
+      r.averageScore ?? 0,
+      r.genres.map(mapGenre),
+      "genre",
+    );
+  }
+  for (const r of studioRelated) {
+    addRelated(
+      r.id,
+      r.title.native ?? `ID:${r.id}`,
+      r.coverImage?.large ?? "",
+      r.averageScore ?? 0,
+      r.genres.map(mapGenre),
+      "studio",
+    );
+  }
+  if (vaWorks) {
+    for (const work of vaWorks.works.slice(0, 10)) {
+      addRelated(
+        work.mediaId,
+        work.titleNative ?? work.titleRomaji ?? `ID:${work.mediaId}`,
+        work.coverImage ?? "",
+        work.averageScore ?? 0,
+        work.genres.map(mapGenre),
+        "voiceActor",
+      );
+    }
+  }
+
+  const related = Array.from(relatedMap.values())
+    .sort((a, b) => b.reasons.length - a.reasons.length || b.score - a.score)
     .slice(0, 6);
 
   return (
@@ -294,7 +350,7 @@ export default async function AnimeDetailPage({ params }: Props) {
 
               {/* 評価バー */}
               {anime.averageScore != null && anime.averageScore > 0 && (
-                <div>
+                <div className="mb-6">
                   <h2 className="mb-2 text-sm font-bold text-text-sub">
                     ユーザー評価
                   </h2>
@@ -311,6 +367,19 @@ export default async function AnimeDetailPage({ params }: Props) {
                   </div>
                 </div>
               )}
+
+              {/* お気に入り・シェア */}
+              <div className="flex flex-wrap items-center gap-3 border-t border-text-sub/10 pt-6">
+                <WatchlistButton
+                  animeId={anime.id}
+                  animeTitle={title}
+                  animeImage={anime.coverImage?.large ?? ""}
+                />
+                <ShareButtons
+                  title={title}
+                  url={`https://anitabi.jp/anime/${anime.id}`}
+                />
+              </div>
             </div>
           </div>
 
@@ -362,51 +431,67 @@ export default async function AnimeDetailPage({ params }: Props) {
             <p className="mt-3 text-xs text-text-sub/60">※外部サイトに移動します</p>
           </section>
 
-          {/* 関連作品 */}
+          {/* 関連作品（強化版） */}
           {related.length > 0 && (
             <section className="mt-10">
-              <h2 className="mb-4 text-lg font-bold">関連作品</h2>
+              <h2 className="mb-4 text-lg font-bold">これも好きかも</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {related.map((r) => (
-                  <Link
-                    key={r.id}
-                    href={`/anime/${r.id}`}
-                    className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50"
-                  >
-                    <div className="relative h-36 overflow-hidden bg-background">
-                      <AnimeImage
-                        src={r.image}
-                        alt={r.title}
-                        className="h-full w-full transition-transform duration-300 group-hover:scale-105"
-                      />
-                      {r.score > 0 && (
-                        <span className="absolute right-2 top-2 rounded-lg bg-background/80 px-2 py-0.5 text-xs font-bold text-accent backdrop-blur-sm">
-                          ★ {r.score}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <div className="mb-1 flex flex-wrap gap-1">
-                        {r.genres.map((g) => {
-                          const genreData = GENRES.find(
-                            (gd) => gd.label === g,
-                          );
-                          return (
-                            <span
-                              key={g}
-                              className={`${genreData?.color ?? "bg-gray-500"} rounded-full px-2 py-0.5 text-[10px] font-medium text-white`}
-                            >
-                              {g}
-                            </span>
-                          );
-                        })}
+                {related.map((r) => {
+                  const REASON_LABELS: Record<RelatedReason, string> = {
+                    genre: "同じジャンル",
+                    studio: "同じスタジオ",
+                    voiceActor: "同じ声優出演",
+                  };
+                  return (
+                    <Link
+                      key={r.id}
+                      href={`/anime/${r.id}`}
+                      className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50"
+                    >
+                      <div className="relative h-36 overflow-hidden bg-background">
+                        <AnimeImage
+                          src={r.image}
+                          alt={r.title}
+                          className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+                        />
+                        {r.score > 0 && (
+                          <span className="absolute right-2 top-2 rounded-lg bg-background/80 px-2 py-0.5 text-xs font-bold text-accent backdrop-blur-sm">
+                            ★ {r.score}
+                          </span>
+                        )}
                       </div>
-                      <h3 className="text-sm font-bold text-text-main group-hover:text-accent transition-colors">
-                        {r.title}
-                      </h3>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="p-3">
+                        {/* なぜおすすめ？タグ */}
+                        <div className="mb-1.5 flex flex-wrap gap-1">
+                          {r.reasons.map((reason) => (
+                            <span
+                              key={reason}
+                              className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent"
+                            >
+                              {REASON_LABELS[reason]}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="mb-1 flex flex-wrap gap-1">
+                          {r.genres.slice(0, 2).map((g) => {
+                            const genreData = GENRES.find((gd) => gd.label === g);
+                            return (
+                              <span
+                                key={g}
+                                className={`${genreData?.color ?? "bg-gray-500"} rounded-full px-2 py-0.5 text-[10px] font-medium text-white`}
+                              >
+                                {g}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <h3 className="text-sm font-bold text-text-main transition-colors group-hover:text-accent">
+                          {r.title}
+                        </h3>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           )}

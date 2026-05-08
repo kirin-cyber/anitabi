@@ -4,6 +4,8 @@ export interface AniListAnime {
   id: number;
   title: {
     native: string | null;
+    romaji?: string | null;
+    english?: string | null;
   };
   coverImage: {
     large: string | null;
@@ -27,6 +29,8 @@ const SEARCH_QUERY = `
         id
         title {
           native
+          romaji
+          english
         }
         coverImage {
           large
@@ -47,6 +51,8 @@ const YEAR_QUERY = `
         id
         title {
           native
+          romaji
+          english
         }
         coverImage {
           large
@@ -98,6 +104,8 @@ const YEAR_RANGE_QUERY = `
         id
         title {
           native
+          romaji
+          english
         }
         coverImage {
           large
@@ -148,6 +156,8 @@ const GENRE_QUERY = `
         id
         title {
           native
+          romaji
+          english
         }
         coverImage {
           large
@@ -210,6 +220,8 @@ const GENRE_SCORE_QUERY = `
         id
         title {
           native
+          romaji
+          english
         }
         coverImage {
           large
@@ -270,6 +282,8 @@ const SEASON_QUERY = `
         id
         title {
           native
+          romaji
+          english
         }
         coverImage {
           large
@@ -509,6 +523,114 @@ export async function getVoiceActorWorks(
     image: (staff.image as { large: string | null }).large,
     works,
   };
+}
+
+// --- ランキング ---
+
+export interface AniListRankingAnime {
+  id: number;
+  title: { native: string | null; romaji: string | null };
+  coverImage: { large: string | null };
+  genres: string[];
+  episodes: number | null;
+  averageScore: number | null;
+  seasonYear: number | null;
+  season: string | null;
+  popularity: number | null;
+}
+
+const RANKING_QUERY = `
+  query AnimeRanking($sort: [MediaSort], $season: MediaSeason, $year: Int, $perPage: Int) {
+    Page(perPage: $perPage) {
+      media(type: ANIME, format: TV, sort: $sort, season: $season, seasonYear: $year, isAdult: false) {
+        id
+        title { native romaji }
+        coverImage { large }
+        genres
+        episodes
+        averageScore
+        seasonYear
+        season
+        popularity
+      }
+    }
+  }
+`;
+
+interface RankingResponse {
+  Page: { media: AniListRankingAnime[] };
+}
+
+export async function getRankingAnime(
+  sort: string[],
+  options?: { season?: string; year?: number; perPage?: number },
+): Promise<AniListRankingAnime[]> {
+  const { season, year, perPage = 10 } = options ?? {};
+  const variables: Record<string, unknown> = { sort, perPage };
+  if (season) variables.season = season;
+  if (year) variables.year = year;
+
+  try {
+    const res = await fetch(ANILIST_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: RANKING_QUERY, variables }),
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    if (json.errors) return [];
+    return (json.data as RankingResponse).Page.media;
+  } catch {
+    return [];
+  }
+}
+
+// --- スタジオで関連作品取得 ---
+
+const STUDIO_QUERY = `
+  query StudioAnime($search: String) {
+    Studio(search: $search) {
+      media(sort: POPULARITY_DESC, perPage: 10, isMain: true) {
+        nodes {
+          id
+          title { native romaji }
+          coverImage { large }
+          genres
+          episodes
+          averageScore
+          seasonYear
+        }
+      }
+    }
+  }
+`;
+
+export async function getAnimeByStudio(studioName: string): Promise<AniListAnime[]> {
+  try {
+    const res = await fetch(ANILIST_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: STUDIO_QUERY, variables: { search: studioName } }),
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    if (json.errors || !json.data?.Studio) return [];
+    const nodes = json.data.Studio.media?.nodes ?? [];
+    return nodes.map((n: Record<string, unknown>) => {
+      const title = n.title as { native: string | null; romaji: string | null };
+      return {
+        id: n.id as number,
+        title: { native: title?.native ?? null },
+        coverImage: n.coverImage as { large: string | null },
+        genres: (n.genres as string[]) ?? [],
+        episodes: (n.episodes as number | null) ?? null,
+        averageScore: (n.averageScore as number | null) ?? null,
+        seasonYear: (n.seasonYear as number | null) ?? null,
+      };
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function searchAnimeByTitle(

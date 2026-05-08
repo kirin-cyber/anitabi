@@ -16,6 +16,26 @@ type Props = {
 export default function HomeContent({ animeList, allAnimeList }: Props) {
   const { t, locale } = useLanguage();
 
+  // ジャンルラベル翻訳
+  const GENRE_EN: Record<string, string> = {
+    "アクション": "Action",
+    "ファンタジー": "Fantasy",
+    "コメディ": "Comedy",
+    "恋愛": "Romance",
+    "SF": "Sci-Fi",
+    "スポーツ": "Sports",
+    "ホラー": "Horror",
+    "日常": "Slice of Life",
+    "ドラマ": "Drama",
+    "ミステリー": "Mystery",
+  };
+  const genreLabel = (label: string) =>
+    locale === "ja" ? label : (GENRE_EN[label] ?? label);
+
+  // タイトル表示（EN時はtitleEn優先）
+  const displayTitle = (anime: Anime) =>
+    locale === "en" && anime.titleEn ? anime.titleEn : anime.title;
+
   // メディア種別ラベル翻訳
   const mediaLabel = (label: string) => {
     if (locale === "ja") return label;
@@ -81,7 +101,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
                 href={`/anime?genre=${encodeURIComponent(genre.label)}`}
                 className={`${genre.color} rounded-full px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-80`}
               >
-                {genre.label}
+                {genreLabel(genre.label)}
               </Link>
             ))}
           </div>
@@ -111,7 +131,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
                       <span className="text-xs text-text-sub">{epsLabel(anime.episodes)}</span>
                     )}
                   </div>
-                  <h3 className="font-bold leading-snug text-text-main">{anime.title}</h3>
+                  <h3 className="font-bold leading-snug text-text-main">{displayTitle(anime)}</h3>
                   {anime.season && (
                     <p className="mt-1 text-xs text-text-sub">{seasonLabel(anime.season)}</p>
                   )}
@@ -125,7 +145,9 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
         <section className="mx-auto max-w-6xl px-4 pb-16">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-bold md:text-xl">{t("home", "gridTitle")}</h2>
-            <span className="text-sm text-text-sub">{allAnimeList.length}作品</span>
+            <span className="text-sm text-text-sub">
+              {allAnimeList.length} {t("home", "countUnit")}
+            </span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {allAnimeList.map((anime) => (
@@ -142,7 +164,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
                     {mediaLabel(anime.genre[0])}
                   </span>
                   <h3 className="text-sm font-bold leading-snug text-text-main group-hover:text-accent transition-colors line-clamp-2">
-                    {anime.title}
+                    {displayTitle(anime)}
                   </h3>
                   {anime.episodes > 0 && (
                     <p className="mt-1 text-xs text-text-sub">{epsLabel(anime.episodes)}</p>

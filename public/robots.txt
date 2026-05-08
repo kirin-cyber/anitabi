@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /api/
+
+# Host
+Host: https://anitabi.site
+
+# Sitemaps
+Sitemap: https://anitabi.site/sitemap.xml

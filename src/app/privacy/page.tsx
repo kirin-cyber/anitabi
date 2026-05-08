@@ -89,7 +89,7 @@ export default function PrivacyPage() {
               </p>
               <div className="mt-2 rounded-xl border border-text-sub/15 bg-card p-4 text-text-sub">
                 <p>運営者: kirin</p>
-                <p>サイトURL: https://anitabi.jp（予定）</p>
+                <p>サイトURL: https://anitabi.site</p>
                 <p>
                   メール:{" "}
                   <a

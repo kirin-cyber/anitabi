@@ -89,6 +89,13 @@ export async function getSeasonWorks(
   }
 }
 
+export async function getScheduleWorks(
+  season: string,
+  first: number = 50,
+): Promise<AnnictWork[]> {
+  return getSeasonWorks(season, first);
+}
+
 // Wikipedia日本語APIでタイトルからあらすじを取得
 export async function getAnimeDescriptionByTitle(title: string): Promise<string | null> {
   try {

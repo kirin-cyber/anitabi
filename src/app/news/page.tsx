@@ -12,6 +12,12 @@ import {
 export const metadata: Metadata = {
   title: "最新情報 - AniTabi",
   description: "今季・来季のアニメ情報や新発表をチェック。放送スケジュール・配信リンクもまとめて確認。",
+  openGraph: {
+    title: "最新情報 - AniTabi",
+    description: "今季・来季のアニメ情報や新発表をチェック。放送スケジュール・配信リンクもまとめて確認。",
+    url: "https://anitabi.site/news",
+    type: "website",
+  },
 };
 
 export default async function NewsPage() {

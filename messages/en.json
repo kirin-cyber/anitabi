@@ -16,7 +16,8 @@
     "featuredTitle": "🔥 Featured Anime",
     "gridTitle": "Spring 2026 Airing Anime",
     "moreBtn": "View All → Anime List",
-    "episodes": "{count} eps"
+    "episodes": "{count} eps",
+    "countUnit": "titles"
   },
   "anime": {
     "title": "Anime List",

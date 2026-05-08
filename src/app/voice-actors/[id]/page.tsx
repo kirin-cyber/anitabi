@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import AnimeImage from "@/components/AnimeImage";
+import ShareButtons from "@/components/ShareButtons";
 import { RANK_COLORS } from "@/constants/voice-actors";
 import { getVoiceActorById } from "@/lib/notion";
 import { getVoiceActorWorks } from "@/lib/anilist";
@@ -131,6 +132,14 @@ export default async function VoiceActorDetailPage({ params }: Props) {
                         X (Twitter)
                       </a>
                     )}
+                  </div>
+
+                  {/* シェアボタン */}
+                  <div className="mt-5 border-t border-text-sub/10 pt-4">
+                    <ShareButtons
+                      title={va.name}
+                      url={`https://anitabi.jp/voice-actors/${id}`}
+                    />
                   </div>
                 </div>
               </div>

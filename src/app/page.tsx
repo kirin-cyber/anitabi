@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import Header from "@/components/Header";
 import HomeContent from "@/components/HomeContent";
+
+export const metadata: Metadata = {
+  title: "AniTabi - あなたにぴったりのアニメを見つけよう",
+  description: "ジャンル診断で好みのアニメをサクッと発見。声優情報や最新アニメ情報もまとめてチェック。",
+  openGraph: {
+    title: "AniTabi - あなたにぴったりのアニメを見つけよう",
+    description: "ジャンル診断で好みのアニメをサクッと発見。声優情報や最新アニメ情報もまとめてチェック。",
+    url: "https://anitabi.site",
+    type: "website",
+  },
+};
 import { DUMMY_ANIME } from "@/constants/dummy-anime";
 import { getSeasonWorks, getCurrentSeason } from "@/lib/annict";
 import { toAnime } from "@/lib/annict-helpers";
@@ -35,20 +47,28 @@ export default async function Home() {
     const normalize = (s: string) =>
       s.replace(/\s/g, "").replace(/[第話期クール0-9]/g, "").toLowerCase();
     const imgMap = new Map<string, string>();
+    const titleEnMap = new Map<string, string>();
     for (const w of anilistWorks) {
       const key = normalize(w.title.native ?? "");
-      if (key && w.coverImage?.large) imgMap.set(key, w.coverImage.large);
+      if (!key) continue;
+      if (w.coverImage?.large) imgMap.set(key, w.coverImage.large);
+      const en = w.title.english ?? w.title.romaji ?? null;
+      if (en) titleEnMap.set(key, en);
     }
+
+    const fuzzyGet = (map: Map<string, string>, key: string): string =>
+      map.get(key) ??
+      [...map.entries()].find(
+        ([k]) => k.length >= 5 && (key.startsWith(k) || k.startsWith(key))
+      )?.[1] ??
+      "";
+
     allAnimeList = allAnimeList.map((a) => {
-      if (a.image) return a;
       const key = normalize(a.title);
-      const img =
-        imgMap.get(key) ??
-        [...imgMap.entries()].find(
-          ([k]) => k.length >= 5 && (key.startsWith(k) || k.startsWith(key))
-        )?.[1] ??
-        "";
-      return img ? { ...a, image: img } : a;
+      const titleEn = fuzzyGet(titleEnMap, key);
+      if (a.image) return { ...a, titleEn: titleEn || a.titleEn };
+      const img = fuzzyGet(imgMap, key);
+      return { ...a, titleEn: titleEn || a.titleEn, image: img };
     });
     animeList = allAnimeList.slice(0, 10);
 

@@ -15,9 +15,12 @@ const TRANSLATIONS = {
     nav: {
       home: "ホーム",
       anime: "アニメ一覧",
+      schedule: "放送表",
+      ranking: "ランキング",
       diagnosis: "診断",
       voiceActors: "声優",
       news: "最新情報",
+      watchlist: "マイリスト",
     },
     home: {
       tagline1: "あなたにぴったりの",
@@ -29,6 +32,7 @@ const TRANSLATIONS = {
       featuredTitle: "🔥 今季の注目作品",
       gridTitle: "2026年春 放送中アニメ一覧",
       moreBtn: "もっと見る → アニメ一覧へ",
+      countUnit: "作品",
     },
     media: {
       tv: "TVアニメ",
@@ -48,9 +52,12 @@ const TRANSLATIONS = {
     nav: {
       home: "Home",
       anime: "Anime List",
+      schedule: "Schedule",
+      ranking: "Rankings",
       diagnosis: "Quiz",
       voiceActors: "Voice Actors",
       news: "News",
+      watchlist: "My List",
     },
     home: {
       tagline1: "Find the perfect",
@@ -62,6 +69,7 @@ const TRANSLATIONS = {
       featuredTitle: "🔥 Featured Anime",
       gridTitle: "Spring 2026 Airing Anime",
       moreBtn: "View All → Anime List",
+      countUnit: "titles",
     },
     media: {
       tv: "TV Anime",
