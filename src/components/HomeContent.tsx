@@ -119,7 +119,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
                 href={`/anime/search?title=${encodeURIComponent(anime.title)}`}
                 className="w-[280px] shrink-0 snap-start overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50 md:w-[320px]"
               >
-                <div className="h-40 overflow-hidden bg-background">
+                <div className="aspect-video overflow-hidden bg-background">
                   <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full" />
                 </div>
                 <div className="p-4">
@@ -156,7 +156,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
                 href={`/anime/search?title=${encodeURIComponent(anime.title)}`}
                 className="group flex items-start gap-3 overflow-hidden rounded-xl border border-text-sub/15 bg-card p-3 transition-colors hover:border-accent/50"
               >
-                <div className="h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-background">
+                <div className="w-14 shrink-0 overflow-hidden rounded-lg bg-background" style={{ aspectRatio: "2/3" }}>
                   <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full" />
                 </div>
                 <div className="min-w-0 flex-1">

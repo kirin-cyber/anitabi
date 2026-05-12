@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     type: "website",
   },
+  verification: {
+    google: "de-XKYq7ytULA9UcwYfWcldQ2AnWRQeM40RMlv1oJgs",
+  },
 };
 
 const gaId = process.env.NEXT_PUBLIC_GA_ID;

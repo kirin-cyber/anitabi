@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import AnimeImage from "@/components/AnimeImage";
 import ShareButtons from "@/components/ShareButtons";
 import WatchlistButton from "@/components/WatchlistButton";
-import { getAnimeById, searchAnimeByGenres, getAnimeByStudio, getVoiceActorWorks } from "@/lib/anilist";
+import { getAnimeById, searchAnimeByGenres, getAnimeByStudio, getVoiceActorWorks, searchAnimeByTagsAndGenres } from "@/lib/anilist";
 import { getAnimeDescriptionByTitle } from "@/lib/annict";
 import { getVoiceActors } from "@/lib/notion";
 import { GENRES } from "@/constants/genres";
@@ -38,6 +38,39 @@ const SEASON_MAP: Record<string, string> = {
 
 function mapGenre(g: string): string {
   return GENRE_MAP[g] ?? g;
+}
+
+// 配信サービス設定（アフィリエイトIDは後から追加可能）
+const STREAMING_CONFIG: Record<string, {
+  label: string; icon: string; bg: string;
+  affiliateParam: string; searchUrl: string;
+}> = {
+  "Netflix":            { label: "Netflix",       icon: "N",  bg: "bg-red-600",    affiliateParam: "", searchUrl: "https://www.netflix.com/search?q={title}" },
+  "Amazon Prime Video": { label: "Prime Video",   icon: "P",  bg: "bg-blue-500",   affiliateParam: "", searchUrl: "https://www.amazon.co.jp/s?k={title}&i=instant-video" },
+  "U-NEXT":             { label: "U-NEXT",        icon: "U",  bg: "bg-gray-800",   affiliateParam: "", searchUrl: "https://video.unext.jp/search?query={title}" },
+  "dアニメストア":       { label: "dアニメストア", icon: "d",  bg: "bg-red-500",    affiliateParam: "", searchUrl: "https://animestore.docomo.ne.jp/animestore/sch_pc?searchKey={title}" },
+  "Disney Plus":        { label: "Disney+",       icon: "D+", bg: "bg-blue-800",   affiliateParam: "", searchUrl: "https://www.disneyplus.com/search/{title}" },
+  "Hulu":               { label: "Hulu",          icon: "H",  bg: "bg-green-600",  affiliateParam: "", searchUrl: "https://www.hulu.jp/search?q={title}" },
+  "ABEMA":              { label: "ABEMA",         icon: "A",  bg: "bg-blue-600",   affiliateParam: "", searchUrl: "https://abema.tv/search?q={title}" },
+  "Crunchyroll":        { label: "Crunchyroll",   icon: "CR", bg: "bg-orange-500", affiliateParam: "", searchUrl: "https://www.crunchyroll.com/search?q={title}" },
+};
+
+// 日本サービス優先の表示順
+const STREAMING_PRIORITY = [
+  "Netflix", "Amazon Prime Video", "U-NEXT", "dアニメストア",
+  "Disney Plus", "Hulu", "ABEMA", "Crunchyroll",
+];
+
+function buildStreamingUrl(directUrl: string, site: string): string {
+  const param = STREAMING_CONFIG[site]?.affiliateParam ?? "";
+  return param ? `${directUrl}${param}` : directUrl;
+}
+
+function buildSearchUrl(site: string, searchTitle: string): string {
+  const cfg = STREAMING_CONFIG[site];
+  if (!cfg) return "#";
+  const url = cfg.searchUrl.replace("{title}", encodeURIComponent(searchTitle));
+  return cfg.affiliateParam ? `${url}${cfg.affiliateParam}` : url;
 }
 
 type Props = {
@@ -76,22 +109,30 @@ export default async function AnimeDetailPage({ params }: Props) {
     .filter((e) => e.voiceActors.length > 0)
     .slice(0, 6);
 
-  // 並列フェッチ: あらすじ・声優DB・関連作品（ジャンル・スタジオ・声優）
+  // レコメンド用: タグ・人気度を活用した精度向上
   const normalize = (s: string) => s.replace(/\s/g, "");
   const firstVaName =
     characters[0]?.voiceActors[0]?.name.native ??
     characters[0]?.voiceActors[0]?.name.full ??
     "";
+  const targetTags = (anime.tags ?? [])
+    .filter((t) => t.rank >= 60)
+    .slice(0, 5)
+    .map((t) => t.name);
+  const targetPopularity = anime.popularity ?? 0;
 
-  const [annictDescription, notionVAs, genreRelated, studioRelated, vaWorks] =
+  const [annictDescription, notionVAs, genreRelated, studioRelated, vaWorks, tagRelated] =
     await Promise.all([
       getAnimeDescriptionByTitle(title),
       getVoiceActors().catch(() => []),
       anime.genres.length > 0
-        ? searchAnimeByGenres(anime.genres.slice(0, 2), 10)
+        ? searchAnimeByGenres(anime.genres.slice(0, 2), 12)
         : Promise.resolve([]),
       studio ? getAnimeByStudio(studio) : Promise.resolve([]),
       firstVaName ? getVoiceActorWorks(firstVaName) : Promise.resolve(null),
+      targetTags.length > 0
+        ? searchAnimeByTagsAndGenres(targetTags.slice(0, 3), anime.genres.slice(0, 2), 60, 12)
+        : Promise.resolve([]),
     ]);
 
   const vaNameMap = new Map(
@@ -119,69 +160,78 @@ export default async function AnimeDetailPage({ params }: Props) {
       ? stripHtml(anime.description)
       : "";
 
-  // 強化版関連作品: ジャンル・スタジオ・声優出演から重複除去して6件
-  type RelatedReason = "genre" | "studio" | "voiceActor";
+  // 強化版レコメンド: ジャンル・スタジオ・声優・タグ・人気度を組み合わせ
+  type RelatedReason = "genre" | "studio" | "voiceActor" | "tags" | "popularity";
   interface EnhancedRelated {
     id: number;
     title: string;
     image: string;
     score: number;
+    popularity: number | null;
     genres: string[];
     reasons: RelatedReason[];
   }
 
   const relatedMap = new Map<number, EnhancedRelated>();
+
   const addRelated = (
     id: number,
     title: string,
     image: string,
     score: number,
+    popularity: number | null,
     genres: string[],
     reason: RelatedReason,
   ) => {
     if (id === anime.id) return;
     if (relatedMap.has(id)) {
-      relatedMap.get(id)!.reasons.push(reason);
+      const item = relatedMap.get(id)!;
+      if (!item.reasons.includes(reason)) item.reasons.push(reason);
     } else {
-      relatedMap.set(id, { id, title, image, score, genres, reasons: [reason] });
+      relatedMap.set(id, { id, title, image, score, popularity, genres, reasons: [reason] });
     }
   };
 
   for (const r of genreRelated) {
-    addRelated(
-      r.id,
-      r.title.native ?? `ID:${r.id}`,
-      r.coverImage?.large ?? "",
-      r.averageScore ?? 0,
-      r.genres.map(mapGenre),
-      "genre",
-    );
+    addRelated(r.id, r.title.native ?? `ID:${r.id}`, r.coverImage?.large ?? "",
+      r.averageScore ?? 0, null, r.genres.map(mapGenre), "genre");
   }
   for (const r of studioRelated) {
-    addRelated(
-      r.id,
-      r.title.native ?? `ID:${r.id}`,
-      r.coverImage?.large ?? "",
-      r.averageScore ?? 0,
-      r.genres.map(mapGenre),
-      "studio",
-    );
+    addRelated(r.id, r.title.native ?? `ID:${r.id}`, r.coverImage?.large ?? "",
+      r.averageScore ?? 0, null, r.genres.map(mapGenre), "studio");
   }
   if (vaWorks) {
     for (const work of vaWorks.works.slice(0, 10)) {
-      addRelated(
-        work.mediaId,
-        work.titleNative ?? work.titleRomaji ?? `ID:${work.mediaId}`,
-        work.coverImage ?? "",
-        work.averageScore ?? 0,
-        work.genres.map(mapGenre),
-        "voiceActor",
-      );
+      addRelated(work.mediaId, work.titleNative ?? work.titleRomaji ?? `ID:${work.mediaId}`,
+        work.coverImage ?? "", work.averageScore ?? 0, null, work.genres.map(mapGenre), "voiceActor");
+    }
+  }
+  for (const r of tagRelated) {
+    addRelated(r.id, r.title.native ?? `ID:${r.id}`, r.coverImage?.large ?? "",
+      r.averageScore ?? 0, r.popularity ?? null, r.genres.map(mapGenre), "tags");
+  }
+
+  // 人気度が近い作品にタグ追加（±40%以内）
+  if (targetPopularity > 0) {
+    for (const item of relatedMap.values()) {
+      if (item.popularity != null) {
+        const diff = Math.abs(targetPopularity - item.popularity) / targetPopularity;
+        if (diff < 0.4 && !item.reasons.includes("popularity")) {
+          item.reasons.push("popularity");
+        }
+      }
     }
   }
 
+  // スコア70以上を優先、理由数→スコアでソート
   const related = Array.from(relatedMap.values())
-    .sort((a, b) => b.reasons.length - a.reasons.length || b.score - a.score)
+    .sort((a, b) => {
+      const aHigh = a.score >= 70 ? 1 : 0;
+      const bHigh = b.score >= 70 ? 1 : 0;
+      if (bHigh !== aHigh) return bHigh - aHigh;
+      if (b.reasons.length !== a.reasons.length) return b.reasons.length - a.reasons.length;
+      return b.score - a.score;
+    })
     .slice(0, 6);
 
   return (
@@ -207,11 +257,12 @@ export default async function AnimeDetailPage({ params }: Props) {
           <div className="overflow-hidden rounded-2xl border border-text-sub/15 bg-card">
             {/* ヒーロー画像 + 情報オーバーレイ */}
             <div className="relative">
-              <div className="h-56 overflow-hidden sm:h-72">
+              <div className="h-56 overflow-hidden bg-background sm:h-72">
                 <AnimeImage
                   src={anime.bannerImage ?? anime.coverImage?.large ?? ""}
                   alt={title}
                   className="h-full w-full"
+                  contain={!anime.bannerImage}
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
@@ -331,6 +382,57 @@ export default async function AnimeDetailPage({ params }: Props) {
                 </div>
               )}
 
+              {/* どこで見る？（直リンク優先・検索フォールバック） */}
+              {(() => {
+                const directMap = new Map(
+                  anime.externalLinks
+                    .filter((l) => l.type === "STREAMING" && STREAMING_CONFIG[l.site])
+                    .map((l) => [l.site, l.url])
+                );
+                const searchTitle =
+                  anime.title.romaji ?? anime.title.native ?? title;
+                return (
+                  <div className="mb-6">
+                    <h2 className="mb-3 text-sm font-bold text-text-sub">
+                      どこで見る？
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {STREAMING_PRIORITY.map((site) => {
+                        const cfg = STREAMING_CONFIG[site];
+                        const directUrl = directMap.get(site);
+                        const href = directUrl
+                          ? buildStreamingUrl(directUrl, site)
+                          : buildSearchUrl(site, searchTitle);
+                        const isDirect = !!directUrl;
+                        return (
+                          <a
+                            key={site}
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`inline-flex h-9 items-center gap-2 overflow-hidden rounded-lg border text-sm font-medium transition-colors hover:border-accent/40 ${
+                              isDirect
+                                ? "border-accent/30 bg-accent/5 text-text-main"
+                                : "border-text-sub/20 bg-background-secondary text-text-sub"
+                            }`}
+                          >
+                            <span className={`flex h-full w-9 shrink-0 items-center justify-center ${cfg.bg} text-xs font-bold text-white`}>
+                              {cfg.icon}
+                            </span>
+                            <span className="pr-3">
+                              {isDirect ? cfg.label : `${cfg.label}で探す`}
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-xs text-text-sub/60">
+                      ※「で探す」はサービス内検索リンクです。配信状況は変更される場合があります
+                    </p>
+                  </div>
+                );
+              })()}
+
               {/* 外部リンク */}
               {anime.siteUrl && (
                 <div className="mb-6">
@@ -431,16 +533,18 @@ export default async function AnimeDetailPage({ params }: Props) {
             <p className="mt-3 text-xs text-text-sub/60">※外部サイトに移動します</p>
           </section>
 
-          {/* 関連作品（強化版） */}
+          {/* レコメンド（強化版） */}
           {related.length > 0 && (
             <section className="mt-10">
-              <h2 className="mb-4 text-lg font-bold">これも好きかも</h2>
+              <h2 className="mb-4 text-lg font-bold">このアニメが好きな人におすすめ</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {related.map((r) => {
                   const REASON_LABELS: Record<RelatedReason, string> = {
                     genre: "同じジャンル",
-                    studio: "同じスタジオ",
+                    studio: "同スタジオ",
                     voiceActor: "同じ声優出演",
+                    tags: "似た雰囲気",
+                    popularity: "人気度が近い",
                   };
                   return (
                     <Link

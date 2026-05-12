@@ -343,6 +343,9 @@ export interface AniListAnimeDetail {
   seasonYear: number | null;
   season: string | null;
   siteUrl: string | null;
+  popularity: number | null;
+  tags: { name: string; rank: number }[];
+  externalLinks: { url: string; site: string; type: string | null }[];
   studios: {
     nodes: { name: string }[];
   };
@@ -362,6 +365,11 @@ export interface AniListAnimeDetail {
       }[];
     }[];
   };
+}
+
+export interface AniListAnimeWithMeta extends AniListAnime {
+  popularity: number | null;
+  tags: { name: string; rank: number }[];
 }
 
 const DETAIL_QUERY = `
@@ -384,6 +392,16 @@ const DETAIL_QUERY = `
       seasonYear
       season
       siteUrl
+      popularity
+      tags {
+        name
+        rank
+      }
+      externalLinks {
+        url
+        site
+        type
+      }
       studios(isMain: true) {
         nodes {
           name
@@ -628,6 +646,62 @@ export async function getAnimeByStudio(studioName: string): Promise<AniListAnime
         seasonYear: (n.seasonYear as number | null) ?? null,
       };
     });
+  } catch {
+    return [];
+  }
+}
+
+// --- タグ＋ジャンルでレコメンド取得 ---
+
+const TAG_GENRE_QUERY = `
+  query AnimeByTagAndGenre($tags: [String], $genres: [String], $scoreMin: Int, $perPage: Int) {
+    Page(perPage: $perPage) {
+      media(
+        tag_in: $tags,
+        genre_in: $genres,
+        type: ANIME,
+        format: TV,
+        averageScore_greater: $scoreMin,
+        isAdult: false,
+        sort: SCORE_DESC
+      ) {
+        id
+        title { native romaji english }
+        coverImage { large }
+        genres
+        episodes
+        averageScore
+        seasonYear
+        popularity
+        tags { name rank }
+      }
+    }
+  }
+`;
+
+interface TagGenreResponse {
+  Page: { media: AniListAnimeWithMeta[] };
+}
+
+export async function searchAnimeByTagsAndGenres(
+  tags: string[],
+  genres: string[],
+  scoreMin: number,
+  perPage: number = 12,
+): Promise<AniListAnimeWithMeta[]> {
+  try {
+    const res = await fetch(ANILIST_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: TAG_GENRE_QUERY,
+        variables: { tags, genres, scoreMin, perPage },
+      }),
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    if (json.errors) return [];
+    return (json.data as TagGenreResponse).Page.media;
   } catch {
     return [];
   }

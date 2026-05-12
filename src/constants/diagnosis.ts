@@ -34,6 +34,57 @@ export const QUESTIONS = [
   },
 ] as const;
 
+// ガチモード追加質問 Q4〜Q6（通常の単一選択）
+export const GACHI_QUESTIONS = [
+  {
+    id: "q4",
+    title: "Q4. 視聴ペースは？",
+    subtitle: "どのくらいのペースで観たい？",
+    options: [
+      { value: "一気見", emoji: "🔥", label: "一気見したい" },
+      { value: "毎週", emoji: "📅", label: "毎週1話ずつ" },
+      { value: "のんびり", emoji: "☕", label: "のんびり気分" },
+    ],
+  },
+  {
+    id: "q5",
+    title: "Q5. 原作の種類は？",
+    subtitle: "好みの原作タイプを選んでね",
+    options: [
+      { value: "漫画", emoji: "📚", label: "漫画原作" },
+      { value: "小説", emoji: "📖", label: "小説・ラノベ原作" },
+      { value: "オリジナル", emoji: "✨", label: "アニメオリジナル" },
+      { value: "何でも", emoji: "🎲", label: "何でもOK" },
+    ],
+  },
+  {
+    id: "q6",
+    title: "Q6. 好きなキャラ像は？",
+    subtitle: "好みのキャラクタータイプを選んでね",
+    options: [
+      { value: "最強系", emoji: "💪", label: "最強系" },
+      { value: "成長系", emoji: "🌱", label: "成長系" },
+      { value: "チームもの", emoji: "🤝", label: "チームもの" },
+      { value: "日常系", emoji: "🌸", label: "日常系" },
+    ],
+  },
+] as const;
+
+// Q7：複数選択（避けたい要素）
+export const Q7_QUESTION = {
+  id: "q7",
+  title: "Q7. 避けたい要素は？",
+  subtitle: "複数選択OK・なければ「指定なし」を選んでね",
+  options: [
+    { value: "グロ", emoji: "🩸", label: "グロ・バイオレンス" },
+    { value: "鬱", emoji: "💀", label: "鬱展開" },
+    { value: "ハーレム", emoji: "💕", label: "ハーレム" },
+    { value: "百合", emoji: "🌹", label: "百合" },
+    { value: "BL", emoji: "💙", label: "BL" },
+    { value: "指定なし", emoji: "✅", label: "指定なし（何でもOK）" },
+  ],
+} as const;
+
 // Q1×Q2 ジャンルマッピング（CLAUDE.md準拠・全15パターン）
 export const GENRE_MAP: Record<string, Record<string, string[]>> = {
   笑いたい: {
