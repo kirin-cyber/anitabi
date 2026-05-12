@@ -182,9 +182,10 @@ export default function DiagnosisWizard() {
 
         <div className="flex flex-col gap-4">
           {results.map((anime, i) => (
-            <article
+            <Link
               key={anime.id}
-              className="overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50"
+              href={`/anime/${anime.id}`}
+              className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50"
             >
               <div className="flex">
                 <div className="h-32 w-24 shrink-0 overflow-hidden bg-background sm:w-28">
@@ -201,7 +202,7 @@ export default function DiagnosisWizard() {
                       </span>
                     ))}
                   </div>
-                  <h3 className="font-bold leading-snug text-text-main">{anime.title}</h3>
+                  <h3 className="font-bold leading-snug text-text-main transition-colors group-hover:text-accent">{anime.title}</h3>
                   <div className="mt-2 flex items-center gap-3 text-xs text-text-sub">
                     {anime.episodes > 0 && <span>全{anime.episodes}話</span>}
                     {anime.seasonYear && <span>{anime.seasonYear}年</span>}
@@ -216,7 +217,7 @@ export default function DiagnosisWizard() {
                   )}
                 </div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
 
