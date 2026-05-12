@@ -253,7 +253,7 @@ export default function AnimeFilter({
             <Link
               key={anime.id}
               href={`/anime/${anime.id}`}
-              className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50"
+              className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-all duration-300 hover:border-accent/50 hover:scale-[1.01] hover:shadow-md"
             >
               <div className="relative h-48 overflow-hidden bg-background">
                 <AnimeImage

@@ -34,12 +34,23 @@ html.light {
 }
 
 @keyframes scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatStar {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.35; }
+  50% { transform: translateY(-10px) scale(1.15); opacity: 0.75; }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
 
 body {

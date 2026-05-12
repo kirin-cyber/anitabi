@@ -82,9 +82,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const anime = await getAnimeById(Number(id));
   if (!anime) return { title: "作品が見つかりません - AniTabi" };
   const title = anime.title.native ?? anime.title.romaji ?? `ID:${anime.id}`;
+  const description = anime.description?.replace(/<[^>]*>/g, "").slice(0, 160) ?? "";
+  const coverImage = anime.coverImage?.large;
   return {
     title: `${title} - AniTabi`,
-    description: anime.description?.slice(0, 160) ?? "",
+    description,
+    openGraph: {
+      title: `${title} - AniTabi`,
+      description,
+      url: `https://anitabi.site/anime/${id}`,
+      type: "website",
+      ...(coverImage && {
+        images: [{ url: coverImage, width: 460, height: 650, alt: title }],
+      }),
+    },
   };
 }
 
@@ -550,7 +561,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                     <Link
                       key={r.id}
                       href={`/anime/${r.id}`}
-                      className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50"
+                      className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-all duration-300 hover:border-accent/50 hover:scale-[1.01] hover:shadow-md"
                     >
                       <div className="relative h-36 overflow-hidden bg-background">
                         <AnimeImage

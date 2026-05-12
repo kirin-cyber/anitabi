@@ -64,22 +64,65 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
 
       <main className="flex-1">
         {/* ヒーローセクション */}
-        <section className="mx-auto max-w-6xl px-4 py-16 text-center md:py-24">
-          <h1 className="text-3xl font-bold leading-tight md:text-5xl">
+        <section className="relative mx-auto max-w-6xl overflow-hidden px-4 py-16 text-center md:py-24">
+          {/* 背景装飾パーティクル */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            {([
+              { top: "12%", left: "6%",  s: 4, d: "0s" },
+              { top: "22%", right: "10%", s: 6, d: "0.7s" },
+              { top: "65%", left: "4%",  s: 4, d: "1.2s" },
+              { top: "45%", right: "5%",  s: 4, d: "0.4s" },
+              { top: "75%", left: "22%", s: 8, d: "1.8s" },
+              { top: "18%", left: "38%", s: 4, d: "2.2s" },
+              { top: "82%", right: "28%", s: 6, d: "0.9s" },
+              { top: "8%",  right: "42%", s: 4, d: "1.5s" },
+              { top: "55%", left: "14%", s: 4, d: "2.8s" },
+              { top: "35%", right: "20%", s: 6, d: "1.1s" },
+            ] as { top?: string; left?: string; right?: string; s: number; d: string }[]).map((p, i) => (
+              <span
+                key={i}
+                className="absolute rounded-full bg-accent/50"
+                style={{
+                  top: p.top, left: p.left, right: p.right,
+                  width: p.s, height: p.s,
+                  animation: `floatStar 3.5s ease-in-out ${p.d} infinite`,
+                }}
+              />
+            ))}
+          </div>
+
+          <h1
+            className="text-3xl font-bold leading-tight md:text-5xl"
+            style={{ animation: "fadeInUp 0.6s ease-out 0.1s both" }}
+          >
             {t("home", "tagline1")}
             <br />
             <span className="text-accent">{t("home", "tagline2")}</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-lg text-text-sub md:text-lg">
+          <p
+            className="mx-auto mt-4 max-w-lg text-text-sub md:text-lg"
+            style={{ animation: "fadeInUp 0.6s ease-out 0.3s both" }}
+          >
             {t("home", "subtitle")}
           </p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link
-              href="/diagnosis"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-8 font-bold text-white transition-opacity hover:opacity-90"
-            >
-              {t("home", "diagnosisBtn")}
-            </Link>
+          <div
+            className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+            style={{ animation: "fadeInUp 0.6s ease-out 0.5s both" }}
+          >
+            {/* 診断ボタン（パルスリング付き） */}
+            <div className="relative inline-flex">
+              <span
+                className="absolute inset-0 rounded-full bg-accent"
+                aria-hidden="true"
+                style={{ animation: "pulseRing 2s ease-out 1s infinite" }}
+              />
+              <Link
+                href="/diagnosis"
+                className="relative inline-flex h-12 items-center justify-center rounded-full bg-accent px-8 font-bold text-white transition-opacity hover:opacity-90"
+              >
+                {t("home", "diagnosisBtn")}
+              </Link>
+            </div>
             <Link
               href="/anime"
               className="inline-flex h-12 items-center justify-center rounded-full border border-text-sub/30 px-8 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
@@ -117,10 +160,10 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
               <Link
                 key={anime.id}
                 href={`/anime/search?title=${encodeURIComponent(anime.title)}`}
-                className="w-[280px] shrink-0 snap-start overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-colors hover:border-accent/50 md:w-[320px]"
+                className="group w-[280px] shrink-0 snap-start overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-all duration-300 hover:border-accent/50 hover:scale-[1.02] hover:shadow-lg md:w-[320px]"
               >
                 <div className="aspect-video overflow-hidden bg-background">
-                  <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full" />
+                  <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
                 </div>
                 <div className="p-4">
                   <div className="mb-2 flex items-center gap-2">
@@ -131,7 +174,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
                       <span className="text-xs text-text-sub">{epsLabel(anime.episodes)}</span>
                     )}
                   </div>
-                  <h3 className="font-bold leading-snug text-text-main">{displayTitle(anime)}</h3>
+                  <h3 className="font-bold leading-snug text-text-main transition-colors group-hover:text-accent">{displayTitle(anime)}</h3>
                   {anime.season && (
                     <p className="mt-1 text-xs text-text-sub">{seasonLabel(anime.season)}</p>
                   )}
@@ -154,10 +197,10 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
               <Link
                 key={anime.id}
                 href={`/anime/search?title=${encodeURIComponent(anime.title)}`}
-                className="group flex items-start gap-3 overflow-hidden rounded-xl border border-text-sub/15 bg-card p-3 transition-colors hover:border-accent/50"
+                className="group flex items-start gap-3 overflow-hidden rounded-xl border border-text-sub/15 bg-card p-3 transition-all duration-300 hover:border-accent/50 hover:scale-[1.01] hover:shadow-md"
               >
                 <div className="w-14 shrink-0 overflow-hidden rounded-lg bg-background" style={{ aspectRatio: "2/3" }}>
-                  <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full" />
+                  <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className={`${anime.genreColor} inline-block rounded-full px-2 py-0.5 text-[10px] font-medium text-white mb-1`}>
