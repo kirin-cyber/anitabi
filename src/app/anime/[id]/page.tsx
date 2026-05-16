@@ -245,8 +245,22 @@ export default async function AnimeDetailPage({ params }: Props) {
     })
     .slice(0, 6);
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "ホーム", item: "https://anitabi.site" },
+      { "@type": "ListItem", position: 2, name: "アニメ一覧", item: "https://anitabi.site/anime" },
+      { "@type": "ListItem", position: 3, name: title, item: `https://anitabi.site/anime/${anime.id}` },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header />
 
       <main className="flex-1">
@@ -335,6 +349,33 @@ export default async function AnimeDetailPage({ params }: Props) {
                   </div>
                 )}
               </div>
+
+              {/* 次回放送バッジ */}
+              {anime.nextAiringEpisode && (() => {
+                const { airingAt, episode, timeUntilAiring } = anime.nextAiringEpisode!;
+                const date = new Date(airingAt * 1000);
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const weekday = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
+                const remainDays = Math.floor(timeUntilAiring / 86400);
+                const remainHours = Math.floor(timeUntilAiring / 3600);
+                const remainLabel =
+                  remainDays >= 1 ? `あと${remainDays}日` :
+                  remainHours >= 1 ? `あと${remainHours}時間` : "まもなく";
+                return (
+                  <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3">
+                    <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-white">
+                      ON AIR
+                    </span>
+                    <span className="text-sm font-medium text-text-main">
+                      次回 第{episode}話　{month}月{day}日（{weekday}）放送予定
+                    </span>
+                    <span className="ml-auto shrink-0 text-sm font-bold text-accent">
+                      {remainLabel}
+                    </span>
+                  </div>
+                );
+              })()}
 
               {/* あらすじ */}
               {description && (

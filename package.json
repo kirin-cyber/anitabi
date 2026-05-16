@@ -12,7 +12,9 @@
     "next": "16.2.1",
     "next-intl": "^4.11.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "resend": "^6.12.3",
+    "wanakana": "^5.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

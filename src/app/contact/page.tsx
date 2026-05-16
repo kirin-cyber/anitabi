@@ -1,118 +1,139 @@
-import type { Metadata } from "next";
-import Header from "@/components/Header";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "お問い合わせ - AniTabi",
-  description: "AniTabiへのお問い合わせはこちらから。",
-};
+import { useState } from "react";
+import Link from "next/link";
+import Header from "@/components/Header";
 
 export default function ContactPage() {
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "送信失敗");
+      }
+      setStatus("done");
+    } catch (e) {
+      setStatus("error");
+      setErrorMsg(e instanceof Error ? e.message : "送信に失敗しました");
+    }
+  }
+
   return (
     <>
       <Header />
       <main className="flex-1">
-        <article className="mx-auto max-w-3xl px-4 py-10">
-          <h1 className="mb-8 text-2xl font-bold md:text-3xl">
-            お問い合わせ
-          </h1>
+        <article className="mx-auto max-w-2xl px-4 py-10">
+          <h1 className="mb-2 text-2xl font-bold md:text-3xl">お問い合わせ</h1>
+          <p className="mb-8 text-sm text-text-sub">
+            バグ報告・情報修正依頼・ご意見はこちらからどうぞ。
+          </p>
 
-          <div className="space-y-6 text-sm leading-relaxed text-text-main">
-            <p>
-              AniTabi（以下「当サイト」）へのお問い合わせは、以下のメールアドレスまでご連絡ください。
-            </p>
-
-            <div className="rounded-xl border border-text-sub/15 bg-card p-6">
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-bold text-text-sub">運営者</p>
-                  <p className="mt-1 font-medium">kirin</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-text-sub">メールアドレス</p>
-                  <p className="mt-1">
-                    <a
-                      href="mailto:kirin9867+ani@gmail.com"
-                      className="font-medium text-accent hover:underline"
-                    >
-                      kirin9867+ani@gmail.com
-                    </a>
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-text-sub">サイトURL</p>
-                  <p className="mt-1 font-medium">https://anitabi.site</p>
-                </div>
-              </div>
+          {status === "done" ? (
+            <div className="rounded-2xl border border-accent/30 bg-accent/10 px-6 py-10 text-center">
+              <p className="text-2xl mb-2">✅</p>
+              <p className="font-bold text-text-main">送信が完了しました</p>
+              <p className="mt-1 text-sm text-text-sub">
+                お問い合わせいただきありがとうございます。内容を確認の上、ご連絡いたします。
+              </p>
+              <Link
+                href="/"
+                className="mt-6 inline-flex h-10 items-center justify-center rounded-full border border-text-sub/30 px-6 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
+              >
+                ← トップに戻る
+              </Link>
             </div>
-
-            <section>
-              <h2 className="mb-2 text-lg font-bold">
-                お問い合わせの際のお願い
-              </h2>
-              <ul className="ml-4 list-disc space-y-2 text-text-sub">
-                <li>
-                  件名に「AniTabi」と記載いただけると対応がスムーズです
-                </li>
-                <li>
-                  お問い合わせ内容によっては、回答にお時間をいただく場合があります
-                </li>
-                <li>
-                  営利目的の勧誘・広告メールはご遠慮ください
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="mb-2 text-lg font-bold">対応可能なお問い合わせ</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-text-sub/15 bg-card p-4">
-                  <p className="font-bold">サイトの不具合報告</p>
-                  <p className="mt-1 text-xs text-text-sub">
-                    表示崩れ・リンク切れ等
-                  </p>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-text-main">
+                    お名前 <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="山田 太郎"
+                    className="w-full rounded-xl border border-text-sub/20 bg-background-secondary px-4 py-2.5 text-sm text-text-main placeholder:text-text-sub/40 focus:border-accent/60 focus:outline-none"
+                  />
                 </div>
-                <div className="rounded-xl border border-text-sub/15 bg-card p-4">
-                  <p className="font-bold">掲載情報の修正依頼</p>
-                  <p className="mt-1 text-xs text-text-sub">
-                    誤った作品情報・声優情報等
-                  </p>
-                </div>
-                <div className="rounded-xl border border-text-sub/15 bg-card p-4">
-                  <p className="font-bold">著作権に関するご連絡</p>
-                  <p className="mt-1 text-xs text-text-sub">
-                    画像・コンテンツの削除要請等
-                  </p>
-                </div>
-                <div className="rounded-xl border border-text-sub/15 bg-card p-4">
-                  <p className="font-bold">その他ご意見・ご要望</p>
-                  <p className="mt-1 text-xs text-text-sub">
-                    機能リクエスト・感想等
-                  </p>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-text-main">
+                    メールアドレス <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="example@email.com"
+                    className="w-full rounded-xl border border-text-sub/20 bg-background-secondary px-4 py-2.5 text-sm text-text-main placeholder:text-text-sub/40 focus:border-accent/60 focus:outline-none"
+                  />
                 </div>
               </div>
-            </section>
 
-            <p className="pt-4 text-text-sub">制定日: 2026年3月31日</p>
-          </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-text-main">
+                  件名 <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={form.subject}
+                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  placeholder="サイトの不具合について"
+                  className="w-full rounded-xl border border-text-sub/20 bg-background-secondary px-4 py-2.5 text-sm text-text-main placeholder:text-text-sub/40 focus:border-accent/60 focus:outline-none"
+                />
+              </div>
 
-          <div className="mt-8 text-center">
-            <Link
-              href="/"
-              className="inline-flex h-10 items-center justify-center rounded-full border border-text-sub/30 px-6 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
-            >
-              ← トップに戻る
-            </Link>
-          </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-text-main">
+                  お問い合わせ内容 <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={6}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  placeholder="お問い合わせ内容を入力してください"
+                  className="w-full rounded-xl border border-text-sub/20 bg-background-secondary px-4 py-2.5 text-sm text-text-main placeholder:text-text-sub/40 focus:border-accent/60 focus:outline-none resize-none"
+                />
+              </div>
+
+              {status === "error" && (
+                <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-400">
+                  {errorMsg}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={status === "sending"}
+                className="h-11 w-full rounded-xl bg-accent font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+              >
+                {status === "sending" ? "送信中..." : "送信する"}
+              </button>
+            </form>
+          )}
         </article>
       </main>
 
       <footer className="border-t border-text-sub/20 bg-background-secondary/50">
         <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-6 text-center text-xs text-text-sub">
-          <p>
-            &copy; 2026{" "}
-            <span className="font-bold text-text-main">AniTabi</span> by kirin
-          </p>
+          <p>&copy; 2026 <span className="font-bold text-text-main">AniTabi</span> by kirin</p>
         </div>
       </footer>
     </>

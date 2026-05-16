@@ -344,6 +344,11 @@ export interface AniListAnimeDetail {
   season: string | null;
   siteUrl: string | null;
   popularity: number | null;
+  nextAiringEpisode: {
+    airingAt: number;
+    episode: number;
+    timeUntilAiring: number;
+  } | null;
   tags: { name: string; rank: number }[];
   externalLinks: { url: string; site: string; type: string | null }[];
   studios: {
@@ -406,6 +411,11 @@ const DETAIL_QUERY = `
         nodes {
           name
         }
+      }
+      nextAiringEpisode {
+        airingAt
+        episode
+        timeUntilAiring
       }
       characters(sort: ROLE, perPage: 6) {
         edges {

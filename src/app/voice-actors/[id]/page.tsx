@@ -35,8 +35,22 @@ export default async function VoiceActorDetailPage({ params }: Props) {
   const staffInfo = await getVoiceActorWorks(searchName);
   const works = staffInfo?.works ?? [];
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "ホーム", item: "https://anitabi.site" },
+      { "@type": "ListItem", position: 2, name: "声優一覧", item: "https://anitabi.site/voice-actors" },
+      { "@type": "ListItem", position: 3, name: va.name, item: `https://anitabi.site/voice-actors/${id}` },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header />
 
       <main className="flex-1">
