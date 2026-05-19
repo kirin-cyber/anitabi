@@ -4,13 +4,31 @@ import {
   type AniListAnime,
 } from "@/lib/anilist";
 
-// Q1（気分）→ AniListジャンル
+// Q1（気分）→ AniListジャンル（検索に使う候補）
 const Q1_MAP: Record<string, string[]> = {
   笑いたい: ["Comedy"],
   泣きたい: ["Drama", "Romance"],
-  ドキドキしたい: ["Action", "Thriller"],
-  ゾクゾクしたい: ["Horror", "Psychological"],
-  癒されたい: ["Slice of Life"],
+  ドキドキしたい: ["Action", "Thriller", "Mystery"],
+  ゾクゾクしたい: ["Horror", "Psychological", "Mystery"],
+  癒されたい: ["Slice of Life", "Comedy"],
+};
+
+// Q1 → 必須ジャンル（結果に少なくとも1つ含む）
+const Q1_REQUIRED: Record<string, string[]> = {
+  笑いたい: ["Comedy"],
+  泣きたい: ["Drama", "Romance"],
+  ドキドキしたい: ["Action", "Thriller", "Mystery"],
+  ゾクゾクしたい: ["Horror", "Psychological", "Mystery"],
+  癒されたい: ["Slice of Life", "Comedy"],
+};
+
+// Q1 → 除外ジャンル（結果に含まれてはいけない）
+const Q1_EXCLUDE: Record<string, string[]> = {
+  笑いたい: ["Horror", "Thriller", "Psychological"],
+  泣きたい: ["Comedy", "Horror"],
+  ドキドキしたい: ["Slice of Life"],
+  ゾクゾクしたい: ["Comedy", "Romance"],
+  癒されたい: ["Horror", "Thriller", "Action"],
 };
 
 // Q2（スタイル）→ 追加ジャンル
@@ -20,10 +38,10 @@ const Q2_MAP: Record<string, string[]> = {
   どっちも好き: [],
 };
 
-// Q3（話数）→ エピソード範囲
+// Q3（話数）→ エピソード範囲（厳格化）
 const Q3_MAP: Record<string, { min: number; max: number }> = {
   短め: { min: 1, max: 13 },
-  スタンダード: { min: 12, max: 26 },
+  スタンダード: { min: 14, max: 26 },
   長編OK: { min: 1, max: 9999 },
 };
 
@@ -82,6 +100,19 @@ function filterByEpisodes(
   });
 }
 
+// Q1ジャンルフィルタ（必須ジャンル1つ以上・除外ジャンルなし）
+function filterByQ1Genres(
+  works: AniListAnime[],
+  required: string[],
+  exclude: string[],
+): AniListAnime[] {
+  return works.filter((w) => {
+    if (required.length > 0 && !w.genres.some((g) => required.includes(g))) return false;
+    if (exclude.length > 0 && w.genres.some((g) => exclude.includes(g))) return false;
+    return true;
+  });
+}
+
 // idで重複除去
 function dedup(works: AniListAnime[]): AniListAnime[] {
   const seen = new Set<number>();
@@ -116,6 +147,8 @@ export async function GET(request: NextRequest) {
 
     // ジャンル構築（Q5・Q6の追加ジャンルを加味）
     const q1Genres = Q1_MAP[q1] ?? ["Comedy"];
+    const q1Required = Q1_REQUIRED[q1] ?? [];
+    const q1Exclude = Q1_EXCLUDE[q1] ?? [];
     const q2Genres = Q2_MAP[q2] ?? [];
     const q5Genres = isGachi ? (Q5_GENRES[q5] ?? []) : [];
     const q6Genres = isGachi ? (Q6_GENRES[q6] ?? []) : [];
@@ -126,32 +159,33 @@ export async function GET(request: NextRequest) {
       ? Q4_MAP[q4]
       : (Q3_MAP[q3] ?? { min: 1, max: 9999 });
 
-    // Q7: 除外ジャンル
-    const excludeGenres = isGachi
+    // Q7: 除外ジャンル（Q1除外と合算）
+    const q7Exclude = isGachi
       ? [...new Set(q7List.flatMap((v) => Q7_EXCLUDE_GENRES[v] ?? []))]
       : [];
+    const excludeGenres = [...new Set([...q1Exclude, ...q7Exclude])];
     const randomYears = pickRandomYears(3);
 
-    // 並列で4カテゴリを取得
+    // 並列で4カテゴリを取得（スコア閾値引き上げ）
     const [popular, midTier, hidden, ...yearResults] = await Promise.all([
-      // 人気作（80点以上・人気順）
-      searchAnimeByGenresAndScore(genres, 79, 100, {
-        perPage: 15,
+      // 人気作（85点以上・人気順）
+      searchAnimeByGenresAndScore(genres, 84, 100, {
+        perPage: 20,
         sort: "POPULARITY_DESC",
       }),
-      // 中堅作（65〜79点・スコア順）
-      searchAnimeByGenresAndScore(genres, 64, 80, {
-        perPage: 15,
+      // 中堅作（75〜84点・スコア順）
+      searchAnimeByGenresAndScore(genres, 74, 85, {
+        perPage: 20,
         sort: "SCORE_DESC",
       }),
-      // 隠れ名作（50〜64点・お気に入り順）
-      searchAnimeByGenresAndScore(genres, 49, 65, {
-        perPage: 10,
+      // 隠れ名作（65〜74点・お気に入り順）
+      searchAnimeByGenresAndScore(genres, 64, 75, {
+        perPage: 15,
         sort: "FAVOURITES_DESC",
       }),
       // ランダム年代（各年から取得）
       ...randomYears.map((y) =>
-        searchAnimeByGenresAndScore(q1Genres, 60, 100, {
+        searchAnimeByGenresAndScore(q1Genres, 65, 100, {
           year: y,
           perPage: 5,
           sort: "SCORE_DESC",
@@ -159,25 +193,23 @@ export async function GET(request: NextRequest) {
       ),
     ]);
 
-    // 話数フィルタ適用
-    const filteredPopular = filterByEpisodes(popular, range).slice(0, 5);
-    const filteredMid = filterByEpisodes(midTier, range).slice(0, 5);
-    const filteredHidden = filterByEpisodes(hidden, range).slice(0, 3);
-    const filteredYear = filterByEpisodes(
-      yearResults.flat(),
-      range,
-    ).slice(0, 3);
+    // 話数フィルタ → Q1ジャンルフィルタ（必須・除外）→ 重複除去
+    const applyFilters = (works: AniListAnime[]) =>
+      filterByQ1Genres(filterByEpisodes(works, range), q1Required, excludeGenres);
 
-    // マージ → 重複除去 → Q7除外ジャンルフィルター → シャッフル → 最大16件
+    const filteredPopular = applyFilters(popular).slice(0, 5);
+    const filteredMid = applyFilters(midTier).slice(0, 5);
+    const filteredHidden = applyFilters(hidden).slice(0, 3);
+    const filteredYear = applyFilters(yearResults.flat()).slice(0, 3);
+
+    // マージ → 重複除去
     const merged = dedup([
       ...filteredPopular,
       ...filteredMid,
       ...filteredHidden,
       ...filteredYear,
     ]);
-    const filtered = excludeGenres.length > 0
-      ? merged.filter((w) => !w.genres.some((g) => excludeGenres.includes(g)))
-      : merged;
+    const filtered = merged;
     const shuffled = shuffle(filtered).slice(0, 5);
 
     // レスポンス整形
