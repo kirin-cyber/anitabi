@@ -4,11 +4,11 @@ import VoiceActorFilter from "@/components/VoiceActorFilter";
 import { getVoiceActors } from "@/lib/notion";
 
 export const metadata: Metadata = {
-  title: "声優一覧 - AniTabi",
-  description: "今季出演中の声優やレジェンド声優をチェック。ランク別に検索・絞り込みできます。",
+  title: "声優一覧｜プロフィール・代表作 - AniTabi",
+  description: "人気声優100名以上のプロフィール・代表作をチェック。今季出演中の声優やレジェンド声優をランク別に検索できます。",
   openGraph: {
-    title: "声優一覧 - AniTabi",
-    description: "今季出演中の声優やレジェンド声優をチェック。ランク別に検索・絞り込みできます。",
+    title: "声優一覧｜プロフィール・代表作 - AniTabi",
+    description: "人気声優100名以上のプロフィール・代表作をチェック。今季出演中の声優やレジェンド声優をランク別に検索できます。",
     url: "https://anitabi.site/voice-actors",
     type: "website",
   },

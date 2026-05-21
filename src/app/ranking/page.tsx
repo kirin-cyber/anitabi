@@ -4,11 +4,11 @@ import RankingTabs from "@/components/RankingTabs";
 import { getRankingAnime } from "@/lib/anilist";
 
 export const metadata: Metadata = {
-  title: "ランキング - AniTabi",
-  description: "今季の人気アニメランキング・歴代高評価TOP10・トレンド注目作品をまとめてチェック。",
+  title: "アニメランキング 2026年春 人気TOP10 - AniTabi",
+  description: "2026年春アニメの人気ランキング・歴代高評価TOP10・注目作品をまとめてチェック。",
   openGraph: {
-    title: "ランキング - AniTabi",
-    description: "今季の人気アニメランキング・歴代高評価TOP10・トレンド注目作品をまとめてチェック。",
+    title: "アニメランキング 2026年春 人気TOP10 - AniTabi",
+    description: "2026年春アニメの人気ランキング・歴代高評価TOP10・注目作品をまとめてチェック。",
     url: "https://anitabi.site/ranking",
     type: "website",
   },

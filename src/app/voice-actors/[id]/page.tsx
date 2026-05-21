@@ -17,8 +17,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const va = await getVoiceActorById(id);
   if (!va) return { title: "声優が見つかりません - AniTabi" };
   return {
-    title: `${va.name} - AniTabi`,
-    description: va.description,
+    title: `${va.name} | 声優情報 | AniTabi`,
+    description: va.description?.slice(0, 100) ?? `${va.name}のプロフィール・出演作品情報。`,
+    openGraph: {
+      title: `${va.name} | 声優情報 | AniTabi`,
+      description: va.description?.slice(0, 100) ?? `${va.name}のプロフィール・出演作品情報。`,
+      url: `https://anitabi.site/voice-actors/${id}`,
+      type: "website",
+    },
   };
 }
 

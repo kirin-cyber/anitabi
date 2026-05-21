@@ -3,11 +3,11 @@ import Header from "@/components/Header";
 import { getScheduleWorks, getCurrentSeason } from "@/lib/annict";
 
 export const metadata: Metadata = {
-  title: "放送表 - AniTabi",
-  description: "今季放送中アニメの一覧。TVアニメ・OVA・劇場版まとめてチェック。",
+  title: "2026年春アニメ放送表 一覧 - AniTabi",
+  description: "2026年春放送中アニメの放送表・一覧。TVアニメ・OVA・劇場版まとめてチェック。",
   openGraph: {
-    title: "放送表 - AniTabi",
-    description: "今季放送中アニメの一覧。TVアニメ・OVA・劇場版まとめてチェック。",
+    title: "2026年春アニメ放送表 一覧 - AniTabi",
+    description: "2026年春放送中アニメの放送表・一覧。TVアニメ・OVA・劇場版まとめてチェック。",
     url: "https://anitabi.site/schedule",
     type: "website",
   },

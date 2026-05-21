@@ -3,11 +3,11 @@ import Link from "next/link";
 import DiagnosisWizard from "@/components/DiagnosisWizard";
 
 export const metadata: Metadata = {
-  title: "アニメ診断 - AniTabi",
-  description: "3つの質問に答えるだけで、あなたにぴったりのアニメが見つかる！サクッと診断モード。",
+  title: "アニメ診断 無料｜おすすめアニメを見つける - AniTabi",
+  description: "3つの質問に答えるだけで、あなたにぴったりのおすすめアニメが無料でわかる！サクッとモード・ガチモード対応。",
   openGraph: {
-    title: "アニメ診断 - AniTabi",
-    description: "3つの質問に答えるだけで、あなたにぴったりのアニメが見つかる！サクッと診断モード。",
+    title: "アニメ診断 無料｜おすすめアニメを見つける - AniTabi",
+    description: "3つの質問に答えるだけで、あなたにぴったりのおすすめアニメが無料でわかる！サクッとモード・ガチモード対応。",
     url: "https://anitabi.site/diagnosis",
     type: "website",
   },

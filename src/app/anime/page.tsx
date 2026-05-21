@@ -7,11 +7,11 @@ import type { Anime } from "@/types/anime";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "アニメ一覧 - AniTabi",
-  description: "年代別のアニメをジャンル・話数・評価で絞り込み。あなたの好みのアニメを探そう。",
+  title: "アニメ一覧 年代別・ジャンル別検索 - AniTabi",
+  description: "1990年〜2026年のアニメを年代別・ジャンル別に検索。アクション・コメディ・恋愛など好みのジャンルで絞り込めます。",
   openGraph: {
-    title: "アニメ一覧 - AniTabi",
-    description: "年代別のアニメをジャンル・話数・評価で絞り込み。あなたの好みのアニメを探そう。",
+    title: "アニメ一覧 年代別・ジャンル別検索 - AniTabi",
+    description: "1990年〜2026年のアニメを年代別・ジャンル別に検索。アクション・コメディ・恋愛など好みのジャンルで絞り込めます。",
     url: "https://anitabi.site/anime",
     type: "website",
   },
@@ -148,12 +148,12 @@ export default async function AnimePage({ searchParams }: Props) {
     </>
   );
 
-  function toAnime(w: { id: number; title: { native: string | null }; coverImage: { large: string | null } | null; genres: string[]; episodes: number | null; averageScore: number | null; seasonYear: number | null }): Anime {
+  function toAnime(w: { id: number; title: { native: string | null; romaji?: string | null; english?: string | null }; coverImage: { large: string | null } | null; genres: string[]; episodes: number | null; averageScore: number | null; seasonYear: number | null }): Anime {
     const genres = w.genres.map(mapGenre);
     return {
       id: w.id,
       title: w.title.native ?? `ID:${w.id}`,
-      titleEn: "",
+      titleEn: w.title.romaji ?? w.title.english ?? "",
       image: w.coverImage?.large ?? "",
       genre: genres,
       genreColor: genreColor(genres[0] ?? ""),

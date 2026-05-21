@@ -82,13 +82,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const anime = await getAnimeById(Number(id));
   if (!anime) return { title: "作品が見つかりません - AniTabi" };
   const title = anime.title.native ?? anime.title.romaji ?? `ID:${anime.id}`;
-  const description = anime.description?.replace(/<[^>]*>/g, "").slice(0, 160) ?? "";
+  const description = anime.description?.replace(/<[^>]*>/g, "").slice(0, 100) ?? "";
   const coverImage = anime.coverImage?.large;
   return {
-    title: `${title} - AniTabi`,
+    title: `${title} | アニメ情報 | AniTabi`,
     description,
     openGraph: {
-      title: `${title} - AniTabi`,
+      title: `${title} | アニメ情報 | AniTabi`,
       description,
       url: `https://anitabi.site/anime/${id}`,
       type: "website",

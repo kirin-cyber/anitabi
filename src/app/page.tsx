@@ -3,11 +3,11 @@ import Header from "@/components/Header";
 import HomeContent from "@/components/HomeContent";
 
 export const metadata: Metadata = {
-  title: "AniTabi - あなたにぴったりのアニメを見つけよう",
-  description: "ジャンル診断で好みのアニメをサクッと発見。声優情報や最新アニメ情報もまとめてチェック。",
+  title: "AniTabi - アニメ診断でおすすめアニメを見つけよう【2026年最新】",
+  description: "アニメ診断で好みのアニメをサクッと発見。2026年最新アニメ一覧・声優プロフィール・ランキングをまとめてチェック。",
   openGraph: {
-    title: "AniTabi - あなたにぴったりのアニメを見つけよう",
-    description: "ジャンル診断で好みのアニメをサクッと発見。声優情報や最新アニメ情報もまとめてチェック。",
+    title: "AniTabi - アニメ診断でおすすめアニメを見つけよう【2026年最新】",
+    description: "アニメ診断で好みのアニメをサクッと発見。2026年最新アニメ一覧・声優プロフィール・ランキングをまとめてチェック。",
     url: "https://anitabi.site",
     type: "website",
   },
