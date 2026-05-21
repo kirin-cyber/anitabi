@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
   try {
     const { name, email, subject, message } = await request.json();
@@ -11,6 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "全項目を入力してください" }, { status: 400 });
     }
 
+    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: "AniTabi Contact <onboarding@resend.dev>",
       to: "kirin9867+ani@gmail.com",
