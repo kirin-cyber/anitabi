@@ -4,14 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import AnimeImage from "@/components/AnimeImage";
 import type { AniListRankingAnime } from "@/lib/anilist";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Tab = "popular" | "topRated" | "trending";
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: "popular", label: "今季人気" },
-  { id: "topRated", label: "歴代高評価" },
-  { id: "trending", label: "今季注目" },
-];
 
 const BADGE_COLORS = [
   "bg-yellow-500",
@@ -27,6 +22,13 @@ interface Props {
 
 export default function RankingTabs({ popular, topRated, trending }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("popular");
+  const { t } = useLanguage();
+
+  const TABS: { id: Tab; labelKey: string }[] = [
+    { id: "popular", labelKey: "popular" },
+    { id: "topRated", labelKey: "topRated" },
+    { id: "trending", labelKey: "trending" },
+  ];
 
   const dataMap: Record<Tab, AniListRankingAnime[]> = { popular, topRated, trending };
   const items = dataMap[activeTab];
@@ -45,7 +47,7 @@ export default function RankingTabs({ popular, topRated, trending }: Props) {
                 : "text-text-sub hover:text-text-main"
             }`}
           >
-            {tab.label}
+            {t("ranking", tab.labelKey)}
           </button>
         ))}
       </div>
@@ -87,7 +89,7 @@ export default function RankingTabs({ popular, topRated, trending }: Props) {
                 </h3>
                 <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-text-sub">
                   {anime.seasonYear && <span>{anime.seasonYear}年</span>}
-                  {anime.episodes && <span>全{anime.episodes}話</span>}
+                  {anime.episodes && <span>{anime.episodes}{t("ranking", "episodes")}</span>}
                   {anime.averageScore && (
                     <span className="font-bold text-accent">★ {anime.averageScore}</span>
                   )}
@@ -99,7 +101,7 @@ export default function RankingTabs({ popular, topRated, trending }: Props) {
 
         {items.length === 0 && (
           <div className="rounded-xl border border-text-sub/15 bg-card px-6 py-12 text-center text-text-sub">
-            データを取得できませんでした
+            {t("schedule", "noData")}
           </div>
         )}
       </div>

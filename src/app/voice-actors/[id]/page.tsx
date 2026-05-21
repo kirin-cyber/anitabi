@@ -7,6 +7,7 @@ import ShareButtons from "@/components/ShareButtons";
 import { RANK_COLORS } from "@/constants/voice-actors";
 import { getVoiceActorById } from "@/lib/notion";
 import { getVoiceActorWorks } from "@/lib/anilist";
+import { getServerLocale, getT } from "@/lib/locale";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -30,6 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function VoiceActorDetailPage({ params }: Props) {
   const { id } = await params;
+  const locale = await getServerLocale();
+  const t = getT(locale);
   const va = await getVoiceActorById(id);
   if (!va) notFound();
 
@@ -90,7 +93,9 @@ export default async function VoiceActorDetailPage({ params }: Props) {
 
                 <div className="flex-1 text-center sm:text-left">
                   <span className={`${rankColor} inline-block rounded-full px-3 py-0.5 text-xs font-bold text-white mb-2`}>
-                    {va.rank}
+                    {locale === "en"
+                      ? ({ 新人: "Newcomer", 中堅: "Rising", ベテラン: "Veteran", レジェンド: "Legend" }[va.rank] ?? va.rank)
+                      : va.rank}
                   </span>
 
                   <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
@@ -107,25 +112,25 @@ export default async function VoiceActorDetailPage({ params }: Props) {
                     {va.debutYear > 0 && (
                       <>
                         <div>
-                          <span className="text-text-sub">デビュー: </span>
-                          <span className="font-medium text-text-main">{va.debutYear}年</span>
+                          <span className="text-text-sub">{t("detail", "debut")}: </span>
+                          <span className="font-medium text-text-main">{va.debutYear}{locale === "en" ? "" : "年"}</span>
                         </div>
                         <div>
-                          <span className="text-text-sub">活動年数: </span>
-                          <span className="font-medium text-text-main">{yearsActive}年</span>
+                          <span className="text-text-sub">{t("detail", "yearsActive")}: </span>
+                          <span className="font-medium text-text-main">{yearsActive}{locale === "en" ? " yrs" : "年"}</span>
                         </div>
                       </>
                     )}
                     {va.agency && (
                       <div>
-                        <span className="text-text-sub">事務所: </span>
+                        <span className="text-text-sub">{t("detail", "agency")}: </span>
                         <span className="font-medium text-text-main">{va.agency}</span>
                       </div>
                     )}
                     {works.length > 0 && (
                       <div>
-                        <span className="text-text-sub">出演作品: </span>
-                        <span className="font-medium text-text-main">{works.length}件+</span>
+                        <span className="text-text-sub">{t("detail", "worksCount")}: </span>
+                        <span className="font-medium text-text-main">{works.length}{locale === "en" ? "+" : "件+"}</span>
                       </div>
                     )}
                   </div>
@@ -139,7 +144,7 @@ export default async function VoiceActorDetailPage({ params }: Props) {
                         rel="noopener noreferrer"
                         className="inline-flex h-8 items-center gap-1.5 rounded-full border border-text-sub/30 px-4 text-xs text-text-sub transition-colors hover:border-accent hover:text-text-main"
                       >
-                        公式サイト
+                        {t("detail", "officialSite")}
                       </a>
                     )}
                     {va.xUrl && (
@@ -149,7 +154,7 @@ export default async function VoiceActorDetailPage({ params }: Props) {
                         rel="noopener noreferrer"
                         className="inline-flex h-8 items-center gap-1.5 rounded-full border border-text-sub/30 px-4 text-xs text-text-sub transition-colors hover:border-accent hover:text-text-main"
                       >
-                        X (Twitter)
+                        {t("detail", "twitter")}
                       </a>
                     )}
                   </div>
@@ -174,10 +179,10 @@ export default async function VoiceActorDetailPage({ params }: Props) {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
                 </span>
-                <h2 className="text-lg font-bold">今季出演中</h2>
+                <h2 className="text-lg font-bold">{t("detail", "vaCurrentSeason")}</h2>
               </div>
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-text-main">
-                現在放送中のアニメに出演しています
+                {t("detail", "vaCurrentNote")}
               </div>
             </section>
           )}
@@ -185,7 +190,7 @@ export default async function VoiceActorDetailPage({ params }: Props) {
           {/* 代表作（Notionの手動設定データ） */}
           {va.notableRoles && (
             <section className="mt-8">
-              <h2 className="mb-4 text-lg font-bold">代表作</h2>
+              <h2 className="mb-4 text-lg font-bold">{t("detail", "vaNotableRoles")}</h2>
               <div className="rounded-xl border border-text-sub/15 bg-card px-4 py-3 text-sm text-text-main leading-relaxed">
                 {va.notableRoles}
               </div>
@@ -196,8 +201,10 @@ export default async function VoiceActorDetailPage({ params }: Props) {
           {works.length > 0 && (
             <section className="mt-8">
               <h2 className="mb-4 text-lg font-bold">
-                出演作品一覧
-                <span className="ml-2 text-sm font-normal text-text-sub">（{works.length}件・人気順）</span>
+                {t("detail", "vaFilmography")}
+                <span className="ml-2 text-sm font-normal text-text-sub">
+                  {t("detail", "vaFilmographySub").replace("{count}", String(works.length))}
+                </span>
               </h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {works.map((work) => (
@@ -224,12 +231,12 @@ export default async function VoiceActorDetailPage({ params }: Props) {
                       </p>
                       {work.characterName && (
                         <p className="mt-0.5 text-xs text-accent truncate">
-                          {work.characterName} 役
+                          {t("detail", "vaAs").replace("{name}", work.characterName)}
                         </p>
                       )}
                       <p className="mt-0.5 text-xs text-text-sub">
-                        {work.seasonYear ? `${work.seasonYear}年` : ""}
-                        {work.episodes ? ` · 全${work.episodes}話` : ""}
+                        {work.seasonYear ? `${work.seasonYear}${locale === "en" ? "" : "年"}` : ""}
+                        {work.episodes ? (locale === "en" ? ` · ${work.episodes} eps` : ` · 全${work.episodes}話`) : ""}
                       </p>
                     </div>
                   </Link>
@@ -243,7 +250,7 @@ export default async function VoiceActorDetailPage({ params }: Props) {
               href="/voice-actors"
               className="inline-flex h-10 items-center justify-center rounded-full border border-text-sub/30 px-6 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
             >
-              ← 声優一覧に戻る
+              {t("detail", "backToVA")}
             </Link>
           </div>
         </div>

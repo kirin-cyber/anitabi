@@ -4,6 +4,11 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { RANKS, RANK_COLORS, type Rank } from "@/constants/voice-actors";
 import type { NotionVoiceActor } from "@/lib/notion";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+const RANK_EN: Record<string, string> = {
+  新人: "Newcomer", 中堅: "Rising", ベテラン: "Veteran", レジェンド: "Legend",
+};
 
 type Props = {
   voiceActors: NotionVoiceActor[];
@@ -12,6 +17,7 @@ type Props = {
 export default function VoiceActorFilter({ voiceActors }: Props) {
   const [search, setSearch] = useState("");
   const [selectedRank, setSelectedRank] = useState<Rank | null>(null);
+  const { t, locale } = useLanguage();
 
   const filtered = useMemo(() => {
     return voiceActors.filter((va) => {
@@ -49,7 +55,7 @@ export default function VoiceActorFilter({ voiceActors }: Props) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="声優名・読みで検索..."
+            placeholder={t("voiceActors", "searchPlaceholder")}
             className="flex-1 bg-transparent text-sm text-text-main placeholder:text-text-sub/50 outline-none"
           />
           {search && (
@@ -57,7 +63,7 @@ export default function VoiceActorFilter({ voiceActors }: Props) {
               onClick={() => setSearch("")}
               className="text-xs text-text-sub hover:text-text-main"
             >
-              クリア
+              {t("voiceActors", "clear")}
             </button>
           )}
         </div>
@@ -65,7 +71,7 @@ export default function VoiceActorFilter({ voiceActors }: Props) {
 
       {/* ランクフィルター */}
       <div className="mb-8">
-        <p className="mb-2 text-xs font-bold text-text-sub">ランク</p>
+        <p className="mb-2 text-xs font-bold text-text-sub">{t("voiceActors", "filterRank")}</p>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedRank(null)}
@@ -75,7 +81,7 @@ export default function VoiceActorFilter({ voiceActors }: Props) {
                 : "bg-card text-text-sub border border-text-sub/15 hover:border-accent/40"
             }`}
           >
-            すべて
+            {t("voiceActors", "all")}
           </button>
           {RANKS.map((rank) => (
             <button
@@ -89,7 +95,7 @@ export default function VoiceActorFilter({ voiceActors }: Props) {
                   : "bg-card text-text-sub border border-text-sub/15 hover:border-accent/40"
               }`}
             >
-              {rank}
+              {locale === "en" ? (RANK_EN[rank] ?? rank) : rank}
             </button>
           ))}
         </div>
@@ -97,7 +103,7 @@ export default function VoiceActorFilter({ voiceActors }: Props) {
 
       {/* 結果件数 */}
       <p className="mb-4 text-sm text-text-sub">
-        {filtered.length}名の声優が見つかりました
+        {t("voiceActors", "found").replace("{count}", String(filtered.length))}
       </p>
 
       {/* カードグリッド */}

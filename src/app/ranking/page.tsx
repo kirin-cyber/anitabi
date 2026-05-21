@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import RankingTabs from "@/components/RankingTabs";
 import { getRankingAnime } from "@/lib/anilist";
+import { getServerLocale, getT } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "アニメランキング 2026年春 人気TOP10 - AniTabi",
@@ -27,6 +28,8 @@ function getCurrentAniListSeason(): {
 }
 
 export default async function RankingPage() {
+  const locale = await getServerLocale();
+  const t = getT(locale);
   const { season, year } = getCurrentAniListSeason();
 
   const [popular, topRated, trending] = await Promise.all([
@@ -42,10 +45,10 @@ export default async function RankingPage() {
         <div className="mx-auto max-w-4xl px-4 py-8">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
-              🏆 ランキング
+              🏆 {locale === "en" ? "Rankings" : "ランキング"}
             </h1>
             <p className="mt-1 text-sm text-text-sub">
-              人気・評価・トレンドで見るアニメランキング
+              {locale === "en" ? "Top anime by popularity, score, and trending" : "人気・評価・トレンドで見るアニメランキング"}
             </p>
           </div>
           <RankingTabs popular={popular} topRated={topRated} trending={trending} />

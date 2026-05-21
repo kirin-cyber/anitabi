@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import { getScheduleWorks, getCurrentSeason } from "@/lib/annict";
+import { getServerLocale, getT } from "@/lib/locale";
 
 export const metadata: Metadata = {
   title: "2026年春アニメ放送表 一覧 - AniTabi",
@@ -31,6 +32,8 @@ function formatSeasonLabel(season: string): string {
 }
 
 export default async function SchedulePage() {
+  const locale = await getServerLocale();
+  const t = getT(locale);
   const season = getCurrentSeason();
   const works = await getScheduleWorks(season, 50);
 
@@ -63,7 +66,7 @@ export default async function SchedulePage() {
             {work.title}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-sub">
-            {work.episodesCount > 0 && <span>全{work.episodesCount}話</span>}
+            {work.episodesCount > 0 && <span>{locale === "en" ? `${work.episodesCount} eps` : `全${work.episodesCount}話`}</span>}
             {work.media && work.media !== "TV" && (
               <span className="rounded-full bg-background-secondary px-2 py-0.5 text-[10px]">
                 {MEDIA_LABELS[work.media] ?? work.media}
@@ -77,7 +80,7 @@ export default async function SchedulePage() {
               rel="noopener noreferrer"
               className="mt-0.5 text-xs text-text-sub transition-colors hover:text-accent"
             >
-              公式サイト ↗
+              {t("schedule", "officialSite")} ↗
             </a>
           )}
         </div>
@@ -92,10 +95,10 @@ export default async function SchedulePage() {
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
-              📅 放送表
+              📅 {t("schedule", "title")}
             </h1>
             <p className="mt-1 text-sm text-text-sub">
-              {seasonLabel} · 今季放送中アニメ（{works.length}作品）
+              {seasonLabel} · {locale === "en" ? `${works.length} titles airing` : `今季放送中アニメ（${works.length}作品）`}
             </p>
           </div>
 

@@ -1,11 +1,27 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AnimeImage from "@/components/AnimeImage";
 import { GENRES } from "@/constants/genres";
 import type { Anime } from "@/types/anime";
+import { toRomaji } from "wanakana";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+// テキスト正規化（カタカナ→ひらがな、スペース除去、小文字化）
+function normalizeText(str: string): string {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .replace(/[ァ-ヶ]/g, (ch) =>
+      String.fromCharCode(ch.charCodeAt(0) - 0x60)
+    )
+    .replace(/[\s　・]/g, "");
+}
+
+// ひらがな・カタカナを含むか判定
+const KANA_REGEX = /[぀-ゟ゠-ヿ]/;
 
 const EPISODE_FILTERS = [
   { label: "すべて", min: 0, max: 9999 },
@@ -45,10 +61,42 @@ export default function AnimeFilter({
   currentPage,
 }: Props) {
   const router = useRouter();
+  const { t, locale } = useLanguage();
+  const [inputValue, setInputValue] = useState("");
   const [search, setSearch] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [episodeFilter, setEpisodeFilter] = useState(0);
   const [scoreFilter, setScoreFilter] = useState(0);
+  const [isPending, startTransition] = useTransition();
+
+  const EP_LABELS = [
+    t("anime", "episodesAll"),
+    t("anime", "episodes13"),
+    t("anime", "episodes14to26"),
+    t("anime", "episodes27plus"),
+  ];
+  const SEASON_LABELS: Record<string, string> = {
+    "": t("anime", "seasonAll"),
+    WINTER: t("anime", "seasonWinter"),
+    SPRING: t("anime", "seasonSpring"),
+    SUMMER: t("anime", "seasonSummer"),
+    FALL: t("anime", "seasonFall"),
+  };
+
+  // 300ms debounce + 2文字以上のみ検索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        setSearch(inputValue.length >= 2 ? inputValue : "");
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  const handleSearchChange = (value: string) => {
+    setInputValue(value);
+    if (value === "") setSearch(""); // クリア時は即座に反映
+  };
 
   const handleYearChange = (year: string) => {
     if (year === "all") {
@@ -69,12 +117,21 @@ export default function AnimeFilter({
   const filtered = useMemo(() => {
     return animeList.filter((anime) => {
       if (search) {
-        const q = search.toLowerCase();
-        if (
-          !anime.title.toLowerCase().includes(q) &&
-          !anime.titleEn.toLowerCase().includes(q)
-        )
-          return false;
+        const q = normalizeText(search);
+        const titleNorm = normalizeText(anime.title);
+        const titleEnNorm = normalizeText(anime.titleEn);
+
+        // ひらがな・カタカナ入力はローマ字変換してtitleEnと照合
+        const qRomaji = KANA_REGEX.test(search)
+          ? normalizeText(toRomaji(search))
+          : null;
+
+        const matches =
+          titleNorm.includes(q) ||
+          titleEnNorm.includes(q) ||
+          (qRomaji !== null && titleEnNorm.includes(qRomaji));
+
+        if (!matches) return false;
       }
       if (selectedGenre && !anime.genre.includes(selectedGenre)) return false;
       const ep = EPISODE_FILTERS[episodeFilter];
@@ -101,14 +158,14 @@ export default function AnimeFilter({
     <>
       {/* 年代・季節フィルター */}
       <div className="mb-6">
-        <p className="mb-2 text-xs font-bold text-text-sub">年代・シーズン</p>
+        <p className="mb-2 text-xs font-bold text-text-sub">{t("anime", "filterYear")}</p>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <select
             value={activeYearKey}
             onChange={(e) => handleYearChange(e.target.value)}
             className={selectClass}
           >
-            <option value="all">全年代</option>
+            <option value="all">{t("anime", "all")}</option>
             {Array.from({ length: 2026 - 1990 + 1 }, (_, i) => {
               const y = 1990 + i;
               return (
@@ -126,8 +183,8 @@ export default function AnimeFilter({
               className={selectClass}
             >
               {SEASON_OPTIONS.map((opt) => (
-                <option key={opt.label} value={opt.key}>
-                  {opt.label}
+                <option key={opt.key || "all"} value={opt.key}>
+                  {SEASON_LABELS[opt.key]}
                 </option>
               ))}
             </select>
@@ -151,17 +208,20 @@ export default function AnimeFilter({
           </svg>
           <input
             type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="タイトルで絞り込み..."
+            value={inputValue}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder={t("anime", "searchPlaceholder")}
             className="flex-1 bg-transparent text-sm text-text-main placeholder:text-text-sub/50 outline-none"
           />
-          {search && (
+          {isPending && (
+            <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          )}
+          {inputValue && !isPending && (
             <button
-              onClick={() => setSearch("")}
+              onClick={() => handleSearchChange("")}
               className="text-xs text-text-sub hover:text-text-main"
             >
-              クリア
+              {t("anime", "clear")}
             </button>
           )}
         </div>
@@ -170,7 +230,7 @@ export default function AnimeFilter({
       {/* フィルターセクション */}
       <div className="mb-8 space-y-4">
         <div>
-          <p className="mb-2 text-xs font-bold text-text-sub">ジャンル</p>
+          <p className="mb-2 text-xs font-bold text-text-sub">{t("anime", "filterGenre")}</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedGenre(null)}
@@ -180,7 +240,7 @@ export default function AnimeFilter({
                   : "bg-card text-text-sub border border-text-sub/15 hover:border-accent/40"
               }`}
             >
-              すべて
+              {t("anime", "all")}
             </button>
             {availableGenres.map((g) => {
               const genreData = GENRES.find((gd) => gd.label === g);
@@ -205,11 +265,11 @@ export default function AnimeFilter({
 
         <div className="flex flex-wrap gap-6">
           <div>
-            <p className="mb-2 text-xs font-bold text-text-sub">話数</p>
+            <p className="mb-2 text-xs font-bold text-text-sub">{t("anime", "filterEpisodes")}</p>
             <div className="flex gap-2">
               {EPISODE_FILTERS.map((f, i) => (
                 <button
-                  key={f.label}
+                  key={i}
                   onClick={() => setEpisodeFilter(i)}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                     episodeFilter === i
@@ -217,13 +277,13 @@ export default function AnimeFilter({
                       : "bg-card text-text-sub border border-text-sub/15 hover:border-accent/40"
                   }`}
                 >
-                  {f.label}
+                  {EP_LABELS[i]}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs font-bold text-text-sub">評価</p>
+            <p className="mb-2 text-xs font-bold text-text-sub">{t("anime", "filterScore")}</p>
             <div className="flex gap-2">
               {SCORE_FILTERS.map((f, i) => (
                 <button
@@ -244,10 +304,23 @@ export default function AnimeFilter({
       </div>
 
       <p className="mb-4 text-sm text-text-sub">
-        {filtered.length}件の作品が見つかりました
+        {isPending ? t("anime", "all") : t("anime", "found").replace("{count}", String(filtered.length))}
       </p>
 
-      {filtered.length > 0 ? (
+      {filtered.length === 0 && !isPending ? (
+        <div className="flex flex-col items-center rounded-2xl border border-text-sub/10 bg-card py-16 text-center">
+          <p className="mb-3 text-4xl">🔍</p>
+          <p className="font-bold text-text-main">{t("anime", "notFound")}</p>
+          {inputValue && (
+            <button
+              onClick={() => handleSearchChange("")}
+              className="mt-4 text-sm text-accent hover:underline"
+            >
+              {t("anime", "clearKeyword")}
+            </button>
+          )}
+        </div>
+      ) : filtered.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((anime) => (
             <Link
@@ -282,7 +355,7 @@ export default function AnimeFilter({
                   })}
                   {anime.episodes > 0 && (
                     <span className="ml-auto text-xs text-text-sub">
-                      全{anime.episodes}話
+                      {locale === "en" ? `${anime.episodes} eps` : `全${anime.episodes}話`}
                     </span>
                   )}
                 </div>
@@ -296,25 +369,8 @@ export default function AnimeFilter({
             </Link>
           ))}
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-4xl">🔍</p>
-          <p className="mt-4 text-text-sub">
-            条件に一致する作品が見つかりませんでした
-          </p>
-          <button
-            onClick={() => {
-              setSearch("");
-              setSelectedGenre(null);
-              setEpisodeFilter(0);
-              setScoreFilter(0);
-            }}
-            className="mt-4 text-sm text-accent hover:underline"
-          >
-            フィルターをリセット
-          </button>
-        </div>
-      )}
+      ) : null}
+
 
       {/* ページネーション */}
       <div className="mt-8 flex items-center justify-center gap-4">
@@ -323,24 +379,24 @@ export default function AnimeFilter({
             href={`${baseHref}${separator}page=${currentPage - 1}`}
             className="inline-flex h-10 items-center justify-center rounded-full border border-text-sub/30 px-6 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
           >
-            ← 前へ
+            {locale === "en" ? "← Prev" : "← 前へ"}
           </Link>
         ) : (
           <span className="inline-flex h-10 items-center justify-center rounded-full border border-text-sub/10 px-6 text-sm text-text-sub/30">
-            ← 前へ
+            {locale === "en" ? "← Prev" : "← 前へ"}
           </span>
         )}
-        <span className="text-sm text-text-sub">ページ {currentPage}</span>
+        <span className="text-sm text-text-sub">{locale === "en" ? `Page ${currentPage}` : `ページ ${currentPage}`}</span>
         {animeList.length >= 50 ? (
           <Link
             href={`${baseHref}${separator}page=${currentPage + 1}`}
             className="inline-flex h-10 items-center justify-center rounded-full border border-text-sub/30 px-6 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
           >
-            次へ →
+            {locale === "en" ? "Next →" : "次へ →"}
           </Link>
         ) : (
           <span className="inline-flex h-10 items-center justify-center rounded-full border border-text-sub/10 px-6 text-sm text-text-sub/30">
-            次へ →
+            {locale === "en" ? "Next →" : "次へ →"}
           </span>
         )}
       </div>

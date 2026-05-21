@@ -5,6 +5,27 @@ import Link from "next/link";
 import AnimeImage from "@/components/AnimeImage";
 import ShareButtons from "@/components/ShareButtons";
 import { QUESTIONS, GACHI_QUESTIONS, Q7_QUESTION } from "@/constants/diagnosis";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+const OPTION_KEY_MAP: Record<string, string> = {
+  "笑いたい": "q1_laugh", "泣きたい": "q1_cry", "ドキドキしたい": "q1_thrill",
+  "ゾクゾクしたい": "q1_chill", "癒されたい": "q1_relax",
+  "アクション派": "q2_action", "ストーリー派": "q2_story", "どっちも好き": "q2_both",
+  "短め": "q3_short", "スタンダード": "q3_standard", "長編OK": "q3_long",
+  "一気見": "q4_binge", "毎週": "q4_weekly", "のんびり": "q4_casual",
+  "漫画": "q5_manga", "小説": "q5_novel", "オリジナル": "q5_original", "何でも": "q5_any",
+  "最強系": "q6_strong", "成長系": "q6_growth", "チームもの": "q6_team", "日常系": "q6_slice",
+  "グロ": "q7_gore", "鬱": "q7_dark", "ハーレム": "q7_harem", "百合": "q7_yuri",
+  "BL": "q7_bl", "指定なし": "q7_none",
+};
+const Q_TITLE_KEYS: Record<string, string> = {
+  q1: "q1title", q2: "q2title", q3: "q3title",
+  q4: "q4title", q5: "q5title", q6: "q6title", q7: "q7title",
+};
+const Q_SUB_KEYS: Record<string, string> = {
+  q1: "q1sub", q2: "q2sub", q3: "q3sub",
+  q4: "q4sub", q5: "q5sub", q6: "q6sub", q7: "q7sub",
+};
 
 type Mode = "quick" | "full" | null;
 
@@ -44,6 +65,13 @@ export default function DiagnosisWizard() {
   const [results, setResults] = useState<DiagnosisResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { t, locale } = useLanguage();
+  const tOpt = (value: string) => {
+    const key = OPTION_KEY_MAP[value];
+    return key ? t("diagnosis", key) : value;
+  };
+  const tQTitle = (qId: string) => t("diagnosis", Q_TITLE_KEYS[qId] ?? qId);
+  const tQSub = (qId: string) => t("diagnosis", Q_SUB_KEYS[qId] ?? qId);
 
   const totalSteps = mode === "full" ? ALL_QUESTIONS.length + 1 : QUESTIONS.length;
   const isQ7 = mode === "full" && step === ALL_QUESTIONS.length;
@@ -160,9 +188,7 @@ export default function DiagnosisWizard() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
-        <p className="mt-4 text-sm text-text-sub">
-          あなたにぴったりのアニメを探しています...
-        </p>
+        <p className="mt-4 text-sm text-text-sub">{t("diagnosis", "loading")}</p>
       </div>
     );
   }
@@ -173,10 +199,10 @@ export default function DiagnosisWizard() {
       <div className="mx-auto max-w-2xl px-4 py-8">
         <div className="mb-8 text-center">
           <p className="mb-2 text-sm text-text-sub">
-            {mode === "full" ? "ガチ診断" : "サクッと診断"}結果
+            {mode === "full" ? t("diagnosis", "gachiMode") : t("diagnosis", "quickMode")}
           </p>
           <h2 className="text-2xl font-bold md:text-3xl">
-            あなたにおすすめの<span className="text-accent">{results.length}作品</span>
+            {t("diagnosis", "resultTitle")} <span className="text-accent">{results.length}</span>
           </h2>
         </div>
 
@@ -204,7 +230,7 @@ export default function DiagnosisWizard() {
                   </div>
                   <h3 className="font-bold leading-snug text-text-main transition-colors group-hover:text-accent">{anime.title}</h3>
                   <div className="mt-2 flex items-center gap-3 text-xs text-text-sub">
-                    {anime.episodes > 0 && <span>全{anime.episodes}話</span>}
+                    {anime.episodes > 0 && <span>{locale === "en" ? `${anime.episodes} eps` : `全${anime.episodes}話`}</span>}
                     {anime.seasonYear && <span>{anime.seasonYear}年</span>}
                   </div>
                   {anime.score > 0 && (
@@ -229,13 +255,13 @@ export default function DiagnosisWizard() {
             onClick={handleReset}
             className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-8 font-bold text-white transition-opacity hover:opacity-90"
           >
-            もう一度診断する
+            {t("diagnosis", "retry")}
           </button>
           <Link
             href="/"
             className="inline-flex h-12 items-center justify-center rounded-full border border-text-sub/30 px-8 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
           >
-            トップに戻る
+            {locale === "en" ? "Back to Home" : "トップに戻る"}
           </Link>
         </div>
       </div>
@@ -247,8 +273,8 @@ export default function DiagnosisWizard() {
     return (
       <div className="mx-auto max-w-lg px-4 py-8">
         <div className="mb-8 text-center">
-          <h2 className="text-xl font-bold md:text-2xl">診断モードを選んでね</h2>
-          <p className="mt-1 text-sm text-text-sub">質問数が多いほど精度が上がるよ</p>
+          <h2 className="text-xl font-bold md:text-2xl">{t("diagnosis", "modeTitle")}</h2>
+          <p className="mt-1 text-sm text-text-sub">{t("diagnosis", "modeSubtitle")}</p>
         </div>
         <div className="flex flex-col gap-4">
           <button
@@ -257,8 +283,8 @@ export default function DiagnosisWizard() {
           >
             <span className="text-4xl">⚡</span>
             <div>
-              <p className="text-lg font-bold text-text-main">サクッと（3問）</p>
-              <p className="mt-1 text-sm text-text-sub">気分・スタイル・話数の3問でサクッと診断。手軽に試したいならこちら。</p>
+              <p className="text-lg font-bold text-text-main">{t("diagnosis", "quickMode")} ({t("diagnosis", "quickDesc")})</p>
+              <p className="mt-1 text-sm text-text-sub">{locale === "en" ? "Answer 3 quick questions to find your anime." : "気分・スタイル・話数の3問でサクッと診断。手軽に試したいならこちら。"}</p>
             </div>
           </button>
           <button
@@ -267,9 +293,9 @@ export default function DiagnosisWizard() {
           >
             <span className="text-4xl">🎯</span>
             <div>
-              <p className="text-lg font-bold text-accent">ガチで（7問）</p>
-              <p className="mt-1 text-sm text-text-sub">視聴ペース・原作・キャラ像・避けたい要素まで細かく設定。より精度の高い結果が出るよ。</p>
-              <span className="mt-2 inline-block rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-white">おすすめ</span>
+              <p className="text-lg font-bold text-accent">{t("diagnosis", "gachiMode")} ({t("diagnosis", "gachiDesc")})</p>
+              <p className="mt-1 text-sm text-text-sub">{locale === "en" ? "7 detailed questions for more accurate results." : "視聴ペース・原作・キャラ像・避けたい要素まで細かく設定。より精度の高い結果が出るよ。"}</p>
+              <span className="mt-2 inline-block rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-white">{locale === "en" ? "Recommended" : "おすすめ"}</span>
             </div>
           </button>
         </div>
@@ -284,7 +310,7 @@ export default function DiagnosisWizard() {
         <div className="mb-6">
           <div className="mb-2 flex items-center justify-between text-xs text-text-sub">
             <span>{step + 1} / {totalSteps}</span>
-            <button onClick={handleBack} className="transition-colors hover:text-text-main">← 戻る</button>
+            <button onClick={handleBack} className="transition-colors hover:text-text-main">{t("diagnosis", "back")}</button>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-background-secondary">
             <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: "100%" }} />
@@ -292,8 +318,8 @@ export default function DiagnosisWizard() {
         </div>
 
         <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold md:text-2xl">{Q7_QUESTION.title}</h2>
-          <p className="mt-1 text-sm text-text-sub">{Q7_QUESTION.subtitle}</p>
+          <h2 className="text-xl font-bold md:text-2xl">{tQTitle("q7")}</h2>
+          <p className="mt-1 text-sm text-text-sub">{tQSub("q7")}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -311,7 +337,7 @@ export default function DiagnosisWizard() {
               >
                 <span className="text-xl">{option.emoji}</span>
                 <span className={`text-sm font-medium ${isSelected ? "text-accent" : "text-text-main"}`}>
-                  {option.label}
+                  {tOpt(option.value)}
                 </span>
               </button>
             );
@@ -322,7 +348,9 @@ export default function DiagnosisWizard() {
           onClick={handleQ7Submit}
           className="mt-6 w-full rounded-full bg-accent py-3 font-bold text-white transition-opacity hover:opacity-90"
         >
-          {q7Selections.length === 0 ? "指定なしで診断する" : "この条件で診断する"}
+          {q7Selections.length === 0
+            ? (locale === "en" ? "Skip & Find Anime" : "指定なしで診断する")
+            : (locale === "en" ? "Find Anime with These Filters" : "この条件で診断する")}
         </button>
       </div>
     );
@@ -341,7 +369,9 @@ export default function DiagnosisWizard() {
         <div className="mb-2 flex items-center justify-between text-xs text-text-sub">
           <span>{step + 1} / {totalSteps}</span>
           <button onClick={handleBack} className="transition-colors hover:text-text-main">
-            {step === 0 ? "← モード選択に戻る" : "← 戻る"}
+            {step === 0
+              ? (locale === "en" ? "← Back to Mode Select" : "← モード選択に戻る")
+              : t("diagnosis", "back")}
           </button>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-background-secondary">
@@ -354,8 +384,8 @@ export default function DiagnosisWizard() {
 
       {/* 質問テキスト */}
       <div className="mb-6 text-center">
-        <h2 className="text-xl font-bold md:text-2xl">{currentQuestion!.title}</h2>
-        <p className="mt-1 text-sm text-text-sub">{currentQuestion!.subtitle}</p>
+        <h2 className="text-xl font-bold md:text-2xl">{tQTitle(currentQuestion!.id)}</h2>
+        <p className="mt-1 text-sm text-text-sub">{tQSub(currentQuestion!.id)}</p>
       </div>
 
       {/* 選択カード */}
@@ -372,7 +402,7 @@ export default function DiagnosisWizard() {
             >
               <span className="text-2xl">{option.emoji}</span>
               <span className={`font-medium ${isSelected ? "text-accent" : "text-text-main"}`}>
-                {option.label}
+                {tOpt(option.value)}
               </span>
               {isSelected && (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="ml-auto h-5 w-5 text-accent">
@@ -394,7 +424,7 @@ export default function DiagnosisWizard() {
             >
               <span className="text-2xl">✏️</span>
               <span className={`font-medium ${isOtherOpen || isOtherSelected ? "text-accent" : "text-text-main"}`}>
-                その他
+                {t("diagnosis", "other")}
               </span>
               {isOtherSelected && (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="ml-auto h-5 w-5 text-accent">
@@ -419,7 +449,7 @@ export default function DiagnosisWizard() {
                     disabled={!freeText.trim()}
                     className="shrink-0 rounded-lg bg-accent px-4 py-1.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-30"
                   >
-                    決定
+                    {t("diagnosis", "confirm")}
                   </button>
                 </div>
               </div>

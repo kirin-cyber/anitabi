@@ -9,6 +9,7 @@ import { getAnimeById, searchAnimeByGenres, getAnimeByStudio, getVoiceActorWorks
 import { getAnimeDescriptionByTitle } from "@/lib/annict";
 import { getVoiceActors } from "@/lib/notion";
 import { GENRES } from "@/constants/genres";
+import { getServerLocale, getT } from "@/lib/locale";
 
 const GENRE_MAP: Record<string, string> = {
   Action: "アクション",
@@ -101,6 +102,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AnimeDetailPage({ params }: Props) {
   const { id } = await params;
+  const locale = await getServerLocale();
+  const t = getT(locale);
   const anime = await getAnimeById(Number(id));
   if (!anime) notFound();
 
@@ -320,7 +323,7 @@ export default async function AnimeDetailPage({ params }: Props) {
               <div className="mb-6 flex flex-wrap gap-4 text-sm">
                 {anime.averageScore != null && anime.averageScore > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-text-sub">評価</span>
+                    <span className="text-text-sub">{t("detail", "score")}</span>
                     <span className="font-bold text-accent">
                       ★ {anime.averageScore}
                     </span>
@@ -328,15 +331,15 @@ export default async function AnimeDetailPage({ params }: Props) {
                 )}
                 {anime.episodes != null && anime.episodes > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-text-sub">話数</span>
+                    <span className="text-text-sub">{t("detail", "episodes")}</span>
                     <span className="font-bold text-text-main">
-                      全{anime.episodes}話
+                      {locale === "en" ? `${anime.episodes} eps` : `全${anime.episodes}話`}
                     </span>
                   </div>
                 )}
                 {seasonLabel && (
                   <div className="flex items-center gap-2">
-                    <span className="text-text-sub">シーズン</span>
+                    <span className="text-text-sub">{t("detail", "season")}</span>
                     <span className="font-bold text-text-main">
                       {seasonLabel}
                     </span>
@@ -344,7 +347,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                 )}
                 {studio && (
                   <div className="flex items-center gap-2">
-                    <span className="text-text-sub">制作</span>
+                    <span className="text-text-sub">{t("detail", "studio")}</span>
                     <span className="font-bold text-text-main">{studio}</span>
                   </div>
                 )}
@@ -356,19 +359,28 @@ export default async function AnimeDetailPage({ params }: Props) {
                 const date = new Date(airingAt * 1000);
                 const month = date.getMonth() + 1;
                 const day = date.getDate();
-                const weekday = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
+                const weekdays = locale === "en"
+                  ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                  : ["日", "月", "火", "水", "木", "金", "土"];
+                const weekday = weekdays[date.getDay()];
                 const remainDays = Math.floor(timeUntilAiring / 86400);
                 const remainHours = Math.floor(timeUntilAiring / 3600);
                 const remainLabel =
-                  remainDays >= 1 ? `あと${remainDays}日` :
-                  remainHours >= 1 ? `あと${remainHours}時間` : "まもなく";
+                  remainDays >= 1
+                    ? t("detail", "remainDays").replace("{n}", String(remainDays))
+                    : remainHours >= 1
+                      ? t("detail", "remainHours").replace("{n}", String(remainHours))
+                      : t("detail", "remainSoon");
+                const nextEpLabel = locale === "en"
+                  ? `Ep ${episode} · ${month}/${day} (${weekday})`
+                  : `次回 第${episode}話　${month}月${day}日（${weekday}）放送予定`;
                 return (
                   <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3">
                     <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-white">
-                      ON AIR
+                      {t("detail", "onAir")}
                     </span>
                     <span className="text-sm font-medium text-text-main">
-                      次回 第{episode}話　{month}月{day}日（{weekday}）放送予定
+                      {nextEpLabel}
                     </span>
                     <span className="ml-auto shrink-0 text-sm font-bold text-accent">
                       {remainLabel}
@@ -381,7 +393,7 @@ export default async function AnimeDetailPage({ params }: Props) {
               {description && (
                 <div className="mb-6">
                   <h2 className="mb-2 text-sm font-bold text-text-sub">
-                    あらすじ
+                    {t("detail", "synopsis")}
                   </h2>
                   <p className="leading-relaxed text-text-main">
                     {description}
@@ -393,7 +405,7 @@ export default async function AnimeDetailPage({ params }: Props) {
               {characters.length > 0 && (
                 <div className="mb-6">
                   <h2 className="mb-3 text-sm font-bold text-text-sub">
-                    キャスト
+                    {t("detail", "cast")}
                   </h2>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {characters.map((edge) => {
@@ -446,7 +458,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                 return (
                   <div className="mb-6">
                     <h2 className="mb-3 text-sm font-bold text-text-sub">
-                      どこで見る？
+                      {t("detail", "whereToWatch")}
                     </h2>
                     <div className="flex flex-wrap gap-2">
                       {STREAMING_PRIORITY.map((site) => {
@@ -472,14 +484,14 @@ export default async function AnimeDetailPage({ params }: Props) {
                               {cfg.icon}
                             </span>
                             <span className="pr-3">
-                              {isDirect ? cfg.label : `${cfg.label}で探す`}
+                              {isDirect ? cfg.label : t("detail", "searchOn").replace("{site}", cfg.label)}
                             </span>
                           </a>
                         );
                       })}
                     </div>
                     <p className="mt-2 text-xs text-text-sub/60">
-                      ※「で探す」はサービス内検索リンクです。配信状況は変更される場合があります
+                      {t("detail", "whereNote")}
                     </p>
                   </div>
                 );
@@ -489,7 +501,7 @@ export default async function AnimeDetailPage({ params }: Props) {
               {anime.siteUrl && (
                 <div className="mb-6">
                   <h2 className="mb-2 text-sm font-bold text-text-sub">
-                    外部リンク
+                    {t("detail", "externalLinks")}
                   </h2>
                   <a
                     href={anime.siteUrl}
@@ -497,7 +509,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 rounded-lg border border-text-sub/20 bg-background-secondary px-4 py-2 text-sm font-medium text-text-main transition-colors hover:border-accent/40"
                   >
-                    AniList で見る ↗
+                    {t("detail", "anilistLink")}
                   </a>
                 </div>
               )}
@@ -506,7 +518,7 @@ export default async function AnimeDetailPage({ params }: Props) {
               {anime.averageScore != null && anime.averageScore > 0 && (
                 <div className="mb-6">
                   <h2 className="mb-2 text-sm font-bold text-text-sub">
-                    ユーザー評価
+                    {t("detail", "userScore")}
                   </h2>
                   <div className="flex items-center gap-3">
                     <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-background">
@@ -540,10 +552,10 @@ export default async function AnimeDetailPage({ params }: Props) {
           {/* 聖地巡礼 */}
           <section className="mt-8 overflow-hidden rounded-2xl border border-text-sub/15 bg-card p-6">
             <h2 className="mb-1 text-lg font-bold text-text-main">
-              🗺️ 聖地を巡る
+              {t("detail", "pilgrimage")}
             </h2>
             <p className="mb-5 text-sm text-text-sub">
-              この作品の舞台となった場所を探してみよう
+              {t("detail", "pilgrimageDesc")}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <a
@@ -556,7 +568,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                みんなでつくる聖地巡礼マップで探す
+                {t("detail", "pilgrimageMap")}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-3.5 w-3.5 shrink-0 text-text-sub">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
@@ -574,7 +586,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                   <line x1="2" y1="12" x2="22" y2="12" />
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
-                アニメツーリズム聖地巡礼DBで探す
+                {t("detail", "pilgrimageDb")}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-3.5 w-3.5 shrink-0 text-text-sub">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
@@ -582,13 +594,13 @@ export default async function AnimeDetailPage({ params }: Props) {
                 </svg>
               </a>
             </div>
-            <p className="mt-3 text-xs text-text-sub/60">※外部サイトに移動します</p>
+            <p className="mt-3 text-xs text-text-sub/60">{t("detail", "pilgrimageNote")}</p>
           </section>
 
           {/* レコメンド（強化版） */}
           {related.length > 0 && (
             <section className="mt-10">
-              <h2 className="mb-4 text-lg font-bold">このアニメが好きな人におすすめ</h2>
+              <h2 className="mb-4 text-lg font-bold">{t("detail", "related")}</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {related.map((r) => {
                   const REASON_LABELS: Record<RelatedReason, string> = {
@@ -658,7 +670,7 @@ export default async function AnimeDetailPage({ params }: Props) {
               href="/anime"
               className="inline-flex h-10 items-center justify-center rounded-full border border-text-sub/30 px-6 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
             >
-              ← アニメ一覧に戻る
+              {t("detail", "backToAnime")}
             </Link>
           </div>
         </div>
