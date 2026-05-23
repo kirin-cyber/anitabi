@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import RankingTabs from "@/components/RankingTabs";
+import Breadcrumb from "@/components/Breadcrumb";
 import { getRankingAnime } from "@/lib/anilist";
 import { getServerLocale, getT } from "@/lib/locale";
 
@@ -43,6 +44,7 @@ export default async function RankingPage() {
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 py-8">
+          <Breadcrumb items={[{ label: "ランキング", href: "/ranking" }]} />
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
               🏆 {locale === "en" ? "Rankings" : "ランキング"}

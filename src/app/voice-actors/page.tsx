@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
+import Breadcrumb from "@/components/Breadcrumb";
 import VoiceActorFilter from "@/components/VoiceActorFilter";
 import { getVoiceActors } from "@/lib/notion";
 
@@ -23,6 +24,7 @@ export default async function VoiceActorsPage() {
 
       <main className="flex-1">
         <section className="mx-auto max-w-6xl px-4 py-8">
+          <Breadcrumb items={[{ label: "声優一覧", href: "/voice-actors" }]} />
           <div className="mb-6">
             <h1 className="text-2xl font-bold md:text-3xl">声優一覧</h1>
             <p className="mt-1 text-sm text-text-sub">

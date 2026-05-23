@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import AnimeFilter from "@/components/AnimeFilter";
+import Breadcrumb from "@/components/Breadcrumb";
 import { getAnimeByYear, getAnimeByYearRange, getAnimeBySeason } from "@/lib/anilist";
 import type { Anime } from "@/types/anime";
 
@@ -121,6 +122,7 @@ export default async function AnimePage({ searchParams }: Props) {
 
       <main className="flex-1">
         <section className="mx-auto max-w-6xl px-4 py-8">
+          <Breadcrumb items={[{ label: "アニメ一覧", href: "/anime" }]} />
           <div className="mb-6">
             <h1 className="text-2xl font-bold md:text-3xl">アニメ一覧</h1>
             <p className="mt-1 text-sm text-text-sub">
