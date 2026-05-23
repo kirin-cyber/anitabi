@@ -6,18 +6,13 @@ import Link from "next/link";
 import AnimeImage from "@/components/AnimeImage";
 import { GENRES } from "@/constants/genres";
 import type { Anime } from "@/types/anime";
-import { toRomaji } from "wanakana";
+import { toRomaji, toHiragana } from "wanakana";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // テキスト正規化（カタカナ→ひらがな、スペース除去、小文字化）
 function normalizeText(str: string): string {
   if (!str) return "";
-  return str
-    .toLowerCase()
-    .replace(/[ァ-ヶ]/g, (ch) =>
-      String.fromCharCode(ch.charCodeAt(0) - 0x60)
-    )
-    .replace(/[\s　・]/g, "");
+  return toHiragana(str.toLowerCase()).replace(/[\s　・]/g, "");
 }
 
 // ひらがな・カタカナを含むか判定

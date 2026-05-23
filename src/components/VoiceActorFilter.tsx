@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { toHiragana } from "wanakana";
 import { RANKS, RANK_COLORS, type Rank } from "@/constants/voice-actors";
 import type { NotionVoiceActor } from "@/lib/notion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,11 +23,13 @@ export default function VoiceActorFilter({ voiceActors }: Props) {
   const filtered = useMemo(() => {
     return voiceActors.filter((va) => {
       if (search) {
-        const q = search.toLowerCase();
+        const q = toHiragana(search.toLowerCase()).replace(/[\s　]/g, "");
+        const qRaw = search.toLowerCase();
+        const readingNorm = toHiragana(va.reading.toLowerCase()).replace(/[\s　]/g, "");
         if (
-          !va.name.toLowerCase().includes(q) &&
-          !va.nameEn.toLowerCase().includes(q) &&
-          !va.reading.toLowerCase().includes(q)
+          !va.name.toLowerCase().includes(qRaw) &&
+          !va.nameEn.toLowerCase().includes(qRaw) &&
+          !readingNorm.includes(q)
         )
           return false;
       }
