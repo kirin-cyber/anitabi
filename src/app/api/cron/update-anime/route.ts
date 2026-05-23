@@ -5,8 +5,11 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  // Vercel Cron Jobs または管理者からのリクエストのみ許可
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const isVercelCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+  const isAdmin = adminPassword && request.headers.get("x-admin-password") === adminPassword;
+
+  if (!isVercelCron && !isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -20,6 +23,7 @@ export async function GET(request: NextRequest) {
       updatedAt: new Date().toISOString(),
     });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error("Cron update error:", e);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

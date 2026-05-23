@@ -93,9 +93,12 @@ export async function getVoiceActorByName(
   return (data.results?.[0]?.id as string | undefined) ?? null;
 }
 
+const NOTION_ID_REGEX = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+
 export async function getVoiceActorById(
   id: string
 ): Promise<NotionVoiceActor | null> {
+  if (!NOTION_ID_REGEX.test(id)) return null;
   const res = await fetch(`https://api.notion.com/v1/pages/${id}`, {
     headers: HEADERS,
     cache: "no-store",

@@ -9,6 +9,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "全項目を入力してください" }, { status: 400 });
     }
 
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!EMAIL_REGEX.test(email) || email.length > 254) {
+      return NextResponse.json({ error: "メールアドレスが正しくありません" }, { status: 400 });
+    }
+    if (name.length > 100 || subject.length > 200 || message.length > 5000) {
+      return NextResponse.json({ error: "入力が長すぎます" }, { status: 400 });
+    }
+
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: "AniTabi Contact <onboarding@resend.dev>",

@@ -99,7 +99,7 @@ export async function getScheduleWorks(
 // Wikipedia日本語APIでタイトルからあらすじを取得
 export async function getAnimeDescriptionByTitle(title: string): Promise<string | null> {
   try {
-    const wikiHeaders = { "User-Agent": "AniTabi/1.0 (https://anitabi.jp)" };
+    const wikiHeaders = { "User-Agent": "AniTabi/1.0 (https://anitabi.site)" };
 
     const searchRes = await fetch(
       `https://ja.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(title)}&format=json&srlimit=1`,

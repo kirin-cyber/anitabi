@@ -543,7 +543,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                 />
                 <ShareButtons
                   title={title}
-                  url={`https://anitabi.jp/anime/${anime.id}`}
+                  url={`https://anitabi.site/anime/${anime.id}`}
                 />
               </div>
             </div>

@@ -163,7 +163,7 @@ export default async function VoiceActorDetailPage({ params }: Props) {
                   <div className="mt-5 border-t border-text-sub/10 pt-4">
                     <ShareButtons
                       title={va.name}
-                      url={`https://anitabi.jp/voice-actors/${id}`}
+                      url={`https://anitabi.site/voice-actors/${id}`}
                     />
                   </div>
                 </div>
