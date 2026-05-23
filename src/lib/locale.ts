@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
-import { TRANSLATIONS } from "@/contexts/LanguageContext";
+import { type Locale, TRANSLATIONS } from "@/lib/translations";
 
-export type Locale = "ja" | "en";
+export type { Locale };
 
 export async function getServerLocale(): Promise<Locale> {
   const cookieStore = await cookies();
