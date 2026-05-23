@@ -65,7 +65,7 @@ export async function getVoiceActors(): Promise<NotionVoiceActor[]> {
       body: JSON.stringify({
         sorts: [{ property: "デビュー年", direction: "ascending" }],
       }),
-      cache: "no-store",
+      next: { revalidate: 86400 },
     }
   );
   if (!res.ok) throw new Error(`Notion API error: ${res.status}`);
@@ -85,7 +85,7 @@ export async function getVoiceActorByName(
         filter: { property: "名前", title: { contains: name } },
         page_size: 1,
       }),
-      cache: "no-store",
+      next: { revalidate: 86400 },
     }
   );
   if (!res.ok) return null;

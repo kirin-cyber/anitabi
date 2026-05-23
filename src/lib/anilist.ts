@@ -77,6 +77,7 @@ export async function getAnimeByYear(
       query: YEAR_QUERY,
       variables: { year, page },
     }),
+    next: { revalidate: 86400 },
   });
 
   if (!res.ok) {
@@ -135,6 +136,7 @@ export async function getAnimeByYearRange(
       query: YEAR_RANGE_QUERY,
       variables: { startFrom, startTo, page },
     }),
+    next: { revalidate: 86400 },
   });
 
   if (!res.ok) {
@@ -182,6 +184,7 @@ export async function searchAnimeByGenres(
       query: GENRE_QUERY,
       variables: { genres, perPage, sort: ["SCORE_DESC"] },
     }),
+    next: { revalidate: 86400 },
   });
 
   if (!res.ok) {
@@ -261,6 +264,7 @@ export async function searchAnimeByGenresAndScore(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: GENRE_SCORE_QUERY, variables }),
+    next: { revalidate: 86400 },
   });
 
   if (!res.ok) {
@@ -309,6 +313,7 @@ export async function getAnimeBySeason(
       query: SEASON_QUERY,
       variables: { year, season, page },
     }),
+    next: { revalidate: 21600 },
   });
 
   if (!res.ok) {
@@ -447,6 +452,7 @@ export async function getAnimeById(
       query: DETAIL_QUERY,
       variables: { id },
     }),
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {
@@ -515,7 +521,7 @@ export async function getVoiceActorWorks(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: STAFF_QUERY, variables: { search: staffName } }),
-    cache: "no-store",
+    next: { revalidate: 86400 },
   });
 
   if (!res.ok) return null;
@@ -603,6 +609,7 @@ export async function getRankingAnime(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: RANKING_QUERY, variables }),
+      next: { revalidate: 21600 },
     });
     if (!res.ok) return [];
     const json = await res.json();
@@ -639,6 +646,7 @@ export async function getAnimeByStudio(studioName: string): Promise<AniListAnime
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: STUDIO_QUERY, variables: { search: studioName } }),
+      next: { revalidate: 86400 },
     });
     if (!res.ok) return [];
     const json = await res.json();
@@ -707,6 +715,7 @@ export async function searchAnimeByTagsAndGenres(
         query: TAG_GENRE_QUERY,
         variables: { tags, genres, scoreMin, perPage },
       }),
+      next: { revalidate: 86400 },
     });
     if (!res.ok) return [];
     const json = await res.json();
@@ -724,6 +733,7 @@ export async function searchAnimeByTitle(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: SEARCH_QUERY, variables: { search: title } }),
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {
