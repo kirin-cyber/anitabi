@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import AnimeImage from "@/components/AnimeImage";
-import ShareButtons from "@/components/ShareButtons";
 import { QUESTIONS, GACHI_QUESTIONS, Q7_QUESTION } from "@/constants/diagnosis";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -63,6 +62,7 @@ export default function DiagnosisWizard() {
   const [otherOpen, setOtherOpen] = useState<string | null>(null);
   const [q7Selections, setQ7Selections] = useState<string[]>([]);
   const [results, setResults] = useState<DiagnosisResult[] | null>(null);
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { t, locale } = useLanguage();
@@ -99,6 +99,7 @@ export default function DiagnosisWizard() {
       const res = await fetch(`/api/diagnosis?${params}`);
       const data = await res.json();
       setResults(data.results ?? []);
+      setResultUrl(`/diagnosis/result?${params}`);
     } catch {
       setResults([]);
     } finally {
@@ -247,10 +248,28 @@ export default function DiagnosisWizard() {
           ))}
         </div>
 
-        <div className="mt-6 flex justify-center">
-          <ShareButtons title="AniTabiのアニメ診断をやってみた！" url="https://anitabi.site/diagnosis" />
-        </div>
-        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        {resultUrl && (
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`AniTabiでアニメ診断したら${results[0]?.title ?? "おすすめ作品"}が1位でした！あなたもやってみて👇`)}&url=${encodeURIComponent(`https://anitabi.site${resultUrl}`)}&hashtags=アニメ診断,AniTabi`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-80"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.626L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+              </svg>
+              結果をXでシェア
+            </a>
+            <a
+              href={resultUrl}
+              className="inline-flex items-center gap-1 rounded-full border border-text-sub/30 px-6 py-3 text-sm text-text-sub transition-colors hover:border-accent hover:text-text-main"
+            >
+              結果ページを開く →
+            </a>
+          </div>
+        )}
+        <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <button
             onClick={handleReset}
             className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-8 font-bold text-white transition-opacity hover:opacity-90"
