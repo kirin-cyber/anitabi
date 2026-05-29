@@ -65,11 +65,27 @@ export default async function VoiceActorDetailPage({ params }: Props) {
     ],
   };
 
+  const personJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: va.name,
+    url: `https://anitabi.site/voice-actors/${id}`,
+    ...(va.nameEn && { alternateName: va.nameEn }),
+    ...(staffInfo?.image && { image: staffInfo.image }),
+    ...(va.agency && { memberOf: { "@type": "Organization", name: va.agency } }),
+    ...(va.description && { description: va.description.slice(0, 200) }),
+    jobTitle: "声優",
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
       />
       <Header />
 

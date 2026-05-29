@@ -243,11 +243,37 @@ export default async function AnimeDetailPage({ params }: Props) {
     ],
   };
 
+  const mediaJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "TVSeries",
+    name: title,
+    url: `https://anitabi.site/anime/${anime.id}`,
+    ...(anime.description && {
+      description: anime.description.replace(/<[^>]*>/g, "").slice(0, 200),
+    }),
+    ...(anime.coverImage?.large && { image: anime.coverImage.large }),
+    ...(anime.seasonYear && { startDate: String(anime.seasonYear) }),
+    ...(anime.episodes && anime.episodes > 0 && { numberOfEpisodes: anime.episodes }),
+    ...(anime.averageScore && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: (anime.averageScore / 10).toFixed(1),
+        bestRating: "10",
+        worstRating: "1",
+      },
+    }),
+    ...(anime.genres.length > 0 && { genre: anime.genres.map(mapGenre) }),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(mediaJsonLd) }}
       />
       <Header />
 
