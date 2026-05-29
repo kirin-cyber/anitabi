@@ -4,6 +4,7 @@ import AnimeFilter from "@/components/AnimeFilter";
 import Breadcrumb from "@/components/Breadcrumb";
 import { getAnimeByYear, getAnimeByYearRange, getAnimeBySeason } from "@/lib/anilist";
 import type { Anime } from "@/types/anime";
+import { mapGenre, genreColor } from "@/constants/genres";
 
 export const dynamic = "force-dynamic";
 
@@ -18,44 +19,6 @@ export const metadata: Metadata = {
   },
 };
 
-const GENRE_MAP: Record<string, string> = {
-  Action: "アクション",
-  Adventure: "アドベンチャー",
-  Comedy: "コメディ",
-  Drama: "ドラマ",
-  Fantasy: "ファンタジー",
-  Horror: "ホラー",
-  Mystery: "ミステリー",
-  Romance: "恋愛",
-  "Sci-Fi": "SF",
-  "Slice of Life": "日常",
-  Sports: "スポーツ",
-  Supernatural: "超自然",
-  Thriller: "スリラー",
-  Psychological: "サイコ",
-  Mecha: "ロボット",
-  Music: "音楽",
-};
-
-function mapGenre(g: string): string {
-  return GENRE_MAP[g] ?? g;
-}
-
-function genreColor(g: string): string {
-  switch (g) {
-    case "アクション": return "bg-purple-600";
-    case "ファンタジー": return "bg-teal-500";
-    case "コメディ": return "bg-amber-500";
-    case "恋愛": return "bg-pink-500";
-    case "SF": return "bg-blue-600";
-    case "スポーツ": return "bg-green-600";
-    case "ホラー": return "bg-red-400";
-    case "日常": return "bg-gray-500";
-    case "ドラマ": return "bg-gray-600";
-    case "ミステリー": return "bg-purple-700";
-    default: return "bg-slate-500";
-  }
-}
 
 const SEASON_LABEL: Record<string, string> = {
   WINTER: "冬",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ThemeToggle from "./ThemeToggle";
@@ -21,11 +21,19 @@ export default function MobileMenu() {
     { href: "/watchlist", label: t("nav", "watchlist") },
   ];
 
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  const close = () => setOpen(false);
+
   return (
     <div className="md:hidden">
       <button
         onClick={() => setOpen(!open)}
         aria-label="メニュー"
+        aria-expanded={open}
         className="p-2"
       >
         <svg
@@ -44,27 +52,43 @@ export default function MobileMenu() {
         </svg>
       </button>
 
+      {/* 背景オーバーレイ */}
       {open && (
-        <nav className="absolute left-0 top-full w-full border-t border-text-sub/20 bg-background px-4 py-4">
-          <ul className="flex flex-col gap-4">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="block text-text-main transition-colors hover:text-accent"
-                  onClick={() => setOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            <li className="flex items-center gap-3">
-              <LanguageSwitcher />
-              <ThemeToggle />
-            </li>
-          </ul>
-        </nav>
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={close}
+          aria-hidden="true"
+        />
       )}
+
+      {/* スライドインメニュー */}
+      <nav
+        className={`absolute left-0 top-full z-50 w-full border-t border-text-sub/20 bg-background px-4 py-4 transition-all duration-200 ${
+          open
+            ? "pointer-events-auto translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-1 opacity-0"
+        }`}
+        aria-hidden={!open}
+      >
+        <ul className="flex flex-col gap-4">
+          {NAV_LINKS.map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className="block text-text-main transition-colors hover:text-accent"
+                onClick={close}
+                tabIndex={open ? 0 : -1}
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+          <li className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </li>
+        </ul>
+      </nav>
     </div>
   );
 }

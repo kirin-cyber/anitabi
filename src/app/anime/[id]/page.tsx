@@ -8,27 +8,8 @@ import WatchlistButton from "@/components/WatchlistButton";
 import { getAnimeById, searchAnimeByGenres, getAnimeByStudio, getVoiceActorWorks, searchAnimeByTagsAndGenres } from "@/lib/anilist";
 import { getAnimeDescriptionByTitle } from "@/lib/annict";
 import { getVoiceActors } from "@/lib/notion";
-import { GENRES } from "@/constants/genres";
+import { GENRES, mapGenre } from "@/constants/genres";
 import { getServerLocale, getT } from "@/lib/locale";
-
-const GENRE_MAP: Record<string, string> = {
-  Action: "アクション",
-  Adventure: "アドベンチャー",
-  Comedy: "コメディ",
-  Drama: "ドラマ",
-  Fantasy: "ファンタジー",
-  Horror: "ホラー",
-  Mystery: "ミステリー",
-  Romance: "恋愛",
-  "Sci-Fi": "SF",
-  "Slice of Life": "日常",
-  Sports: "スポーツ",
-  Supernatural: "超自然",
-  Thriller: "スリラー",
-  Psychological: "サイコ",
-  Mecha: "ロボット",
-  Music: "音楽",
-};
 
 const SEASON_MAP: Record<string, string> = {
   WINTER: "冬",
@@ -37,9 +18,6 @@ const SEASON_MAP: Record<string, string> = {
   FALL: "秋",
 };
 
-function mapGenre(g: string): string {
-  return GENRE_MAP[g] ?? g;
-}
 
 // 配信サービス設定（アフィリエイトIDは後から追加可能）
 const STREAMING_CONFIG: Record<string, {
