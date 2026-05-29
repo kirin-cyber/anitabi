@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import AnimeImage from "@/components/AnimeImage";
 import Breadcrumb from "@/components/Breadcrumb";
+import { DIAGNOSIS_TYPE_NAMES } from "@/constants/diagnosis";
 
 interface DiagnosisResult {
   id: number;
@@ -53,6 +54,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title,
     description,
+    alternates: { canonical: resultUrl },
     openGraph: {
       title,
       description,
@@ -106,8 +108,11 @@ export default async function DiagnosisResultPage({ searchParams }: Props) {
   const data = await res.json();
   const results: DiagnosisResult[] = data.results ?? [];
   const resultUrl = `https://anitabi.site/diagnosis/result?${diagParams}`;
+  const typeName = DIAGNOSIS_TYPE_NAMES[`${params.q1}:${params.q2}`];
   const shareText = encodeURIComponent(
-    `AniTabiでアニメ診断したら${results[0]?.title ?? "おすすめ作品"}が1位でした！あなたもやってみて👇`
+    typeName
+      ? `【アニメ診断】あなたは「${typeName}」！1位は${results[0]?.title ?? "おすすめ作品"}✨ あなたのタイプは？👇`
+      : `AniTabiでアニメ診断したら${results[0]?.title ?? "おすすめ作品"}が1位でした！あなたもやってみて👇`
   );
   const xShareUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(resultUrl)}&hashtags=アニメ診断,AniTabi`;
 

@@ -57,20 +57,32 @@ function toVoiceActor(page: Record<string, unknown>): NotionVoiceActor {
 }
 
 export async function getVoiceActors(): Promise<NotionVoiceActor[]> {
-  const res = await fetch(
-    `https://api.notion.com/v1/databases/${DB_ID}/query`,
-    {
-      method: "POST",
-      headers: HEADERS,
-      body: JSON.stringify({
-        sorts: [{ property: "デビュー年", direction: "ascending" }],
-      }),
-      next: { revalidate: 86400 },
-    }
-  );
-  if (!res.ok) throw new Error(`Notion API error: ${res.status}`);
-  const data = await res.json();
-  return (data.results as Record<string, unknown>[]).map(toVoiceActor);
+  const all: NotionVoiceActor[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const body: Record<string, unknown> = {
+      page_size: 100,
+      sorts: [{ property: "デビュー年", direction: "ascending" }],
+    };
+    if (cursor) body.start_cursor = cursor;
+
+    const res = await fetch(
+      `https://api.notion.com/v1/databases/${DB_ID}/query`,
+      {
+        method: "POST",
+        headers: HEADERS,
+        body: JSON.stringify(body),
+        next: { revalidate: 86400 },
+      }
+    );
+    if (!res.ok) throw new Error(`Notion API error: ${res.status}`);
+    const data = await res.json();
+    all.push(...(data.results as Record<string, unknown>[]).map(toVoiceActor));
+    cursor = data.has_more ? (data.next_cursor as string) : undefined;
+  } while (cursor);
+
+  return all;
 }
 
 export async function getVoiceActorByName(

@@ -17,14 +17,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const va = await getVoiceActorById(id);
   if (!va) return { title: "声優が見つかりません - AniTabi" };
+  const staffInfo = await getVoiceActorWorks(va.name);
+  const ogImage = staffInfo?.image;
+  const description = va.description?.slice(0, 100) ?? `${va.name}のプロフィール・出演作品情報。`;
   return {
     title: `${va.name} | 声優情報 | AniTabi`,
-    description: va.description?.slice(0, 100) ?? `${va.name}のプロフィール・出演作品情報。`,
+    description,
+    alternates: { canonical: `https://anitabi.site/voice-actors/${id}` },
     openGraph: {
       title: `${va.name} | 声優情報 | AniTabi`,
-      description: va.description?.slice(0, 100) ?? `${va.name}のプロフィール・出演作品情報。`,
+      description,
       url: `https://anitabi.site/voice-actors/${id}`,
       type: "website",
+      ...(ogImage && { images: [{ url: ogImage, width: 300, height: 300, alt: va.name }] }),
+    },
+    twitter: {
+      card: "summary",
+      title: `${va.name} | 声優情報 | AniTabi`,
+      description,
+      ...(ogImage && { images: [ogImage] }),
     },
   };
 }

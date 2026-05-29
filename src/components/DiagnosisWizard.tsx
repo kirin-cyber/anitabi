@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import AnimeImage from "@/components/AnimeImage";
-import { QUESTIONS, GACHI_QUESTIONS, Q7_QUESTION } from "@/constants/diagnosis";
+import { QUESTIONS, GACHI_QUESTIONS, Q7_QUESTION, DIAGNOSIS_TYPE_NAMES } from "@/constants/diagnosis";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const OPTION_KEY_MAP: Record<string, string> = {
@@ -251,7 +251,13 @@ export default function DiagnosisWizard() {
         {resultUrl && (
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`AniTabiでアニメ診断したら${results[0]?.title ?? "おすすめ作品"}が1位でした！あなたもやってみて👇`)}&url=${encodeURIComponent(`https://anitabi.site${resultUrl}`)}&hashtags=アニメ診断,AniTabi`}
+              href={(() => {
+                const typeName = DIAGNOSIS_TYPE_NAMES[`${answers.q1}:${answers.q2}`];
+                const text = typeName
+                  ? `【アニメ診断】あなたは「${typeName}」！1位は${results[0]?.title ?? "おすすめ作品"}✨ あなたのタイプは？👇`
+                  : `AniTabiでアニメ診断したら${results[0]?.title ?? "おすすめ作品"}が1位でした！あなたもやってみて👇`;
+                return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`https://anitabi.site${resultUrl}`)}&hashtags=アニメ診断,AniTabi`;
+              })()}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-80"

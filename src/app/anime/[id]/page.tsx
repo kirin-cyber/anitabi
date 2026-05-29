@@ -88,6 +88,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${title} | アニメ情報 | AniTabi`,
     description,
+    alternates: { canonical: `https://anitabi.site/anime/${id}` },
     openGraph: {
       title: `${title} | アニメ情報 | AniTabi`,
       description,
@@ -96,6 +97,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ...(coverImage && {
         images: [{ url: coverImage, width: 460, height: 650, alt: title }],
       }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | アニメ情報 | AniTabi`,
+      description,
+      ...(coverImage && { images: [coverImage] }),
     },
   };
 }

@@ -8,6 +8,16 @@ interface DiagnosisResult {
   title: string;
 }
 
+async function loadNotoSansJP(): Promise<ArrayBuffer> {
+  const css = await fetch(
+    "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700",
+    { headers: { "User-Agent": "Mozilla/5.0" } }
+  ).then((r) => r.text());
+  const url = css.match(/src: url\((.+?)\) format/)?.[1];
+  if (!url) throw new Error("Noto Sans JP font URL not found");
+  return fetch(url).then((r) => r.arrayBuffer());
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
@@ -52,6 +62,13 @@ export async function GET(request: NextRequest) {
   };
   const headline = q1 ? `${moodLabel[q1] ?? q1}アニメ診断結果` : "アニメ診断結果";
 
+  let fontData: ArrayBuffer | undefined;
+  try {
+    fontData = await loadNotoSansJP();
+  } catch {
+    // フォント取得失敗時はシステムフォントにフォールバック
+  }
+
   return new ImageResponse(
     (
       <div
@@ -64,7 +81,7 @@ export async function GET(request: NextRequest) {
           justifyContent: "center",
           backgroundColor: "#060c1c",
           padding: "56px 72px",
-          fontFamily: "sans-serif",
+          fontFamily: "NotoSansJP, sans-serif",
         }}
       >
         {/* ロゴ */}
@@ -143,6 +160,12 @@ export async function GET(request: NextRequest) {
         </div>
       </div>
     ),
-    { width: 1200, height: 630 }
+    {
+      width: 1200,
+      height: 630,
+      fonts: fontData
+        ? [{ name: "NotoSansJP", data: fontData, style: "normal" as const }]
+        : [],
+    }
   );
 }
