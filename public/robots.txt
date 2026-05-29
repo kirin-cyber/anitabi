@@ -5,6 +5,7 @@ Allow: /
 # *
 User-agent: *
 Disallow: /api/
+Disallow: /admin
 
 # Host
 Host: https://anitabi.site
