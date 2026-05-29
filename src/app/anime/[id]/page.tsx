@@ -466,41 +466,66 @@ export default async function AnimeDetailPage({ params }: Props) {
                 );
                 const searchTitle =
                   anime.title.romaji ?? anime.title.native ?? title;
+                const directServices = STREAMING_PRIORITY.filter((site) => directMap.has(site));
+                const searchServices = STREAMING_PRIORITY.filter((site) => !directMap.has(site));
+
+                const StreamingLink = ({ site, isDirect }: { site: string; isDirect: boolean }) => {
+                  const cfg = STREAMING_CONFIG[site];
+                  const directUrl = directMap.get(site);
+                  const href = isDirect
+                    ? buildStreamingUrl(directUrl!, site)
+                    : buildSearchUrl(site, searchTitle);
+                  return (
+                    <a
+                      key={site}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex h-9 items-center gap-2 overflow-hidden rounded-lg border text-sm font-medium transition-colors hover:border-accent/40 ${
+                        isDirect
+                          ? "border-accent/30 bg-accent/5 text-text-main"
+                          : "border-text-sub/20 bg-background-secondary text-text-sub"
+                      }`}
+                    >
+                      <span className={`flex h-full w-9 shrink-0 items-center justify-center ${cfg.bg} text-xs font-bold text-white`}>
+                        {cfg.icon}
+                      </span>
+                      <span className="pr-3">
+                        {isDirect ? cfg.label : cfg.label}
+                      </span>
+                    </a>
+                  );
+                };
+
                 return (
                   <div className="mb-6">
                     <h2 className="mb-3 text-sm font-bold text-text-sub">
                       {t("detail", "whereToWatch")}
                     </h2>
-                    <div className="flex flex-wrap gap-2">
-                      {STREAMING_PRIORITY.map((site) => {
-                        const cfg = STREAMING_CONFIG[site];
-                        const directUrl = directMap.get(site);
-                        const href = directUrl
-                          ? buildStreamingUrl(directUrl, site)
-                          : buildSearchUrl(site, searchTitle);
-                        const isDirect = !!directUrl;
-                        return (
-                          <a
-                            key={site}
-                            href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`inline-flex h-9 items-center gap-2 overflow-hidden rounded-lg border text-sm font-medium transition-colors hover:border-accent/40 ${
-                              isDirect
-                                ? "border-accent/30 bg-accent/5 text-text-main"
-                                : "border-text-sub/20 bg-background-secondary text-text-sub"
-                            }`}
-                          >
-                            <span className={`flex h-full w-9 shrink-0 items-center justify-center ${cfg.bg} text-xs font-bold text-white`}>
-                              {cfg.icon}
-                            </span>
-                            <span className="pr-3">
-                              {isDirect ? cfg.label : t("detail", "searchOn").replace("{site}", cfg.label)}
-                            </span>
-                          </a>
-                        );
-                      })}
-                    </div>
+
+                    {directServices.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {directServices.map((site) => (
+                          <StreamingLink key={site} site={site} isDirect />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-text-sub/60 mb-2">配信情報が見つかりませんでした</p>
+                    )}
+
+                    {searchServices.length > 0 && (
+                      <details className="mt-3">
+                        <summary className="cursor-pointer text-xs text-text-sub/70 hover:text-text-sub select-none">
+                          他のサービスで検索する ({searchServices.length}件) ▸
+                        </summary>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {searchServices.map((site) => (
+                            <StreamingLink key={site} site={site} isDirect={false} />
+                          ))}
+                        </div>
+                      </details>
+                    )}
+
                     <p className="mt-2 text-xs text-text-sub/60">
                       {t("detail", "whereNote")}
                     </p>
