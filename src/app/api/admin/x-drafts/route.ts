@@ -39,13 +39,18 @@ export async function GET(request: NextRequest) {
     {
       id: "anime-pickup",
       label: "今季アニメPickup",
-      texts: anime.map((a) => {
-        const title = a.title.native ?? a.title.romaji ?? "（タイトル不明）";
+      texts: anime.map((a, i) => {
+        const title = (a.title.native || a.title.romaji || "このアニメ");
         const score = a.averageScore ?? "??";
-        return {
-          animeId: a.id,
-          text: `${title}、観た？👀\n\n今季スコア${score}点でじわじわ話題になってる作品。\nどこで配信してるかAniTabiでまとめて確認できるよ👇\n\nhttps://anitabi.site/anime/${a.id}\n\n#アニメ好きと繋がりたい #${year}年${seasonLabel[season]}アニメ`,
-        };
+        const genres = a.genres.slice(0, 2).join(" / ");
+        const url = `https://anitabi.site/anime/${a.id}`;
+        const season2 = `${year}年${seasonLabel[season]}アニメ`;
+        const patterns = [
+          `${title}、今季イチ好きかもしれない\n\nジャンル：${genres}\nスコア：${score}点\n\n配信サービスはAniTabiで確認できるよ👇\n${url}\n\n#アニメ好きと繋がりたい #${season2}`,
+          `今季アニメ迷ってる人に${title}を推したい\n\nスコア${score}点。ジャンルは${genres}。\n1話だけでも観てみて👇\n${url}\n\n#${season2} #アニメ`,
+          `「${title}ってどこで観られる？」ってなってた人へ\n\nAniTabiにまとめたよ。スコア${score}点の今季注目作品\n\n${url}\n\n#アニメ好きと繋がりたい #${season2}`,
+        ];
+        return { animeId: a.id, text: patterns[i % patterns.length] };
       }),
     },
     {
