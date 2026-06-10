@@ -254,12 +254,13 @@ export default async function AnimeDetailPage({ params }: Props) {
     ...(anime.coverImage?.large && { image: anime.coverImage.large }),
     ...(anime.seasonYear && { startDate: String(anime.seasonYear) }),
     ...(anime.episodes && anime.episodes > 0 && { numberOfEpisodes: anime.episodes }),
-    ...(anime.averageScore && {
+    ...(anime.averageScore && anime.popularity && anime.popularity > 0 && {
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue: (anime.averageScore / 10).toFixed(1),
         bestRating: "10",
         worstRating: "1",
+        ratingCount: anime.popularity,
       },
     }),
     ...(anime.genres.length > 0 && { genre: anime.genres.map(mapGenre) }),
