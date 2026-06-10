@@ -39,10 +39,14 @@ export async function GET(request: NextRequest) {
     {
       id: "anime-pickup",
       label: "今季アニメPickup",
-      texts: anime.map((a) => ({
-        animeId: a.id,
-        text: `【${year}年${seasonLabel[season]}アニメPickup】\n${a.title.native ?? a.title.romaji ?? ""}\n\nスコア ⭐${a.averageScore ?? "??"}/100\n\n詳細・配信サービスはこちら👇\nhttps://anitabi.site/anime/${a.id}\n\n#アニメ #${year}年アニメ`,
-      })),
+      texts: anime.map((a) => {
+        const title = a.title.native ?? a.title.romaji ?? "（タイトル不明）";
+        const score = a.averageScore ?? "??";
+        return {
+          animeId: a.id,
+          text: `${title}、観た？👀\n\n今季スコア${score}点でじわじわ話題になってる作品。\nどこで配信してるかAniTabiでまとめて確認できるよ👇\n\nhttps://anitabi.site/anime/${a.id}\n\n#アニメ好きと繋がりたい #${year}年${seasonLabel[season]}アニメ`,
+        };
+      }),
     },
     {
       id: "va-intro",
@@ -51,7 +55,7 @@ export async function GET(request: NextRequest) {
         ? [
             {
               animeId: null,
-              text: `【声優紹介】${dailyVA.name}さん🎤\n\n${dailyVA.description?.slice(0, 80) ?? ""}\n\nプロフィール・出演作品はこちら👇\nhttps://anitabi.site/voice-actors/${dailyVA.id}\n\n#声優 #アニメ`,
+              text: `${dailyVA.name}さんの声、絶対どこかで聞いたことある🎤\n\n${dailyVA.description?.slice(0, 60) ?? ""}…\n\n出演作品まとめたよ👇\nhttps://anitabi.site/voice-actors/${dailyVA.id}\n\n#声優 #アニメ好きと繋がりたい`,
             },
           ]
         : [],
@@ -62,7 +66,7 @@ export async function GET(request: NextRequest) {
       texts: [
         {
           animeId: null,
-          text: `あなたにぴったりのアニメ、わかる？🎯\n\n「笑いたい？泣きたい？癒されたい？」\n3問に答えるだけでおすすめ作品がわかります✨\n\n👇無料で診断する\nhttps://anitabi.site/diagnosis\n\n#アニメ診断 #アニメおすすめ #アニメ好きと繋がりたい`,
+          text: `最近ハマれるアニメ探してる人へ🎯\n\n3問答えるだけでぴったりの作品がわかる診断つくった。\n所要時間1分もかからないよ\n\n👇やってみて\nhttps://anitabi.site/diagnosis\n\n#アニメ #アニメ診断 #アニメ好きと繋がりたい`,
         },
       ],
     },
