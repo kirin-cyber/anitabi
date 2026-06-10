@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 const STORAGE_KEY = "anitabi_admin_pw";
+
+type DraftText = { animeId: number | null; text: string };
+type Draft = { id: string; label: string; texts: DraftText[] };
 
 type NotionStatus = {
   total: number;
@@ -25,6 +28,23 @@ export default function AdminPage() {
   const [notionStatus, setNotionStatus] = useState<NotionStatus | null>(null);
   const [updateResult, setUpdateResult] = useState<UpdateResult | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [editedTexts, setEditedTexts] = useState<Record<string, string>>({});
+
+  const fetchXDrafts = useCallback(async (pw: string) => {
+    setLoading("xdrafts");
+    const res = await fetch("/api/admin/x-drafts", {
+      headers: { "x-admin-password": pw },
+    });
+    if (res.ok) {
+      const data = await res.json() as { drafts: Draft[] };
+      setDrafts(data.drafts);
+      const initial: Record<string, string> = {};
+      data.drafts.forEach((d) => d.texts.forEach((t, i) => { initial[`${d.id}-${i}`] = t.text; }));
+      setEditedTexts(initial);
+    }
+    setLoading(null);
+  }, []);
 
   useEffect(() => {
     const saved = sessionStorage.getItem(STORAGE_KEY);
@@ -41,6 +61,7 @@ export default function AdminPage() {
       sessionStorage.setItem(STORAGE_KEY, pw);
       setAuthed(true);
       setAuthError("");
+      fetchXDrafts(pw);
     } else if (showError) {
       setAuthError("パスワードが違います");
     }
@@ -119,6 +140,58 @@ export default function AdminPage() {
         </div>
 
         <div className="space-y-6">
+          {/* X下書き */}
+          <section className="rounded-2xl border border-text-sub/15 bg-card p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-text-main">X（Twitter）投稿下書き</h2>
+                <p className="mt-0.5 text-xs text-text-sub">編集して「Xで投稿」を押すと投稿画面が開きます</p>
+              </div>
+              <button
+                onClick={() => fetchXDrafts(sessionStorage.getItem(STORAGE_KEY) ?? "")}
+                disabled={loading === "xdrafts"}
+                className="h-8 rounded-xl border border-text-sub/20 bg-background-secondary px-4 text-xs text-text-main hover:border-accent/40 disabled:opacity-50"
+              >
+                {loading === "xdrafts" ? "生成中..." : "再生成"}
+              </button>
+            </div>
+            {loading === "xdrafts" && (
+              <p className="text-sm text-text-sub">下書きを生成中...</p>
+            )}
+            {drafts.map((draft) => (
+              <div key={draft.id} className="mb-6 last:mb-0">
+                <p className="mb-2 text-xs font-bold text-accent">{draft.label}</p>
+                <div className="space-y-3">
+                  {draft.texts.map((_, i) => {
+                    const key = `${draft.id}-${i}`;
+                    const text = editedTexts[key] ?? "";
+                    return (
+                      <div key={key} className="rounded-xl border border-text-sub/15 bg-background p-3">
+                        <textarea
+                          value={text}
+                          onChange={(e) => setEditedTexts((prev) => ({ ...prev, [key]: e.target.value }))}
+                          rows={6}
+                          className="w-full resize-none bg-transparent text-sm text-text-main focus:outline-none"
+                        />
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-xs text-text-sub">{text.length}文字</span>
+                          <a
+                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#1d9bf0] px-4 text-xs font-bold text-white hover:opacity-80"
+                          >
+                            Xで投稿
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </section>
+
           {/* お問い合わせ */}
           <section className="rounded-2xl border border-text-sub/15 bg-card p-6">
             <h2 className="mb-4 font-bold text-text-main">お問い合わせ</h2>
