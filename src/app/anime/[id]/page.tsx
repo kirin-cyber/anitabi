@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import AnimeImage from "@/components/AnimeImage";
 import ShareButtons from "@/components/ShareButtons";
 import WatchlistButton from "@/components/WatchlistButton";
+import StarRating from "@/components/StarRating";
 import { getAnimeById, searchAnimeByGenres, getAnimeByStudio, getVoiceActorWorks, searchAnimeByTagsAndGenres } from "@/lib/anilist";
 import { getAnimeDescriptionByTitle } from "@/lib/annict";
 import { getVoiceActors } from "@/lib/notion";
@@ -570,6 +571,14 @@ export default async function AnimeDetailPage({ params }: Props) {
                   </div>
                 </div>
               )}
+
+              {/* あなたの評価 */}
+              <div className="mb-6">
+                <h2 className="mb-2 text-sm font-bold text-text-sub">
+                  あなたの評価
+                </h2>
+                <StarRating animeId={anime.id} />
+              </div>
 
               {/* お気に入り・シェア */}
               <div className="flex flex-wrap items-center gap-3 border-t border-text-sub/10 pt-6">
