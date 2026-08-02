@@ -2,41 +2,53 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import RankingTabs from "@/components/RankingTabs";
 import Breadcrumb from "@/components/Breadcrumb";
+import SeasonNav from "@/components/SeasonNav";
 import { getRankingAnime } from "@/lib/anilist";
 import { getServerLocale, getT } from "@/lib/locale";
+import {
+  type SeasonInfo,
+  getCurrentSeasonInfo,
+  parseSeasonQuery,
+  formatSeasonAnimeLabel,
+} from "@/lib/season";
 
-export const metadata: Metadata = {
-  title: "アニメランキング 2026年春 人気TOP10 - AniTabi",
-  description: "2026年春アニメの人気ランキング・歴代高評価TOP10・注目作品をまとめてチェック。",
-  openGraph: {
-    title: "アニメランキング 2026年春 人気TOP10 - AniTabi",
-    description: "2026年春アニメの人気ランキング・歴代高評価TOP10・注目作品をまとめてチェック。",
-    url: "https://anitabi.site/ranking",
-    type: "website",
-  },
+type Props = {
+  searchParams: Promise<{ year?: string; season?: string }>;
 };
 
-function getCurrentAniListSeason(): {
-  season: "WINTER" | "SPRING" | "SUMMER" | "FALL";
-  year: number;
-} {
-  const month = new Date().getMonth() + 1;
-  const year = new Date().getFullYear();
-  if (month <= 3) return { season: "WINTER", year };
-  if (month <= 6) return { season: "SPRING", year };
-  if (month <= 9) return { season: "SUMMER", year };
-  return { season: "FALL", year };
+// URLクエリ（year, season）から表示対象のクールを決定。指定がなければ現在のクール
+async function resolveSeasonInfo(searchParams: Props["searchParams"]): Promise<SeasonInfo> {
+  const params = await searchParams;
+  return parseSeasonQuery(params.year, params.season) ?? getCurrentSeasonInfo();
 }
 
-export default async function RankingPage() {
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const seasonInfo = await resolveSeasonInfo(searchParams);
+  const seasonLabel = formatSeasonAnimeLabel(seasonInfo, "ja");
+  const title = `アニメランキング ${seasonLabel} 人気TOP10 - AniTabi`;
+  const description = `${seasonLabel}の人気ランキング・歴代高評価TOP10・注目作品をまとめてチェック。`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: "https://anitabi.site/ranking",
+      type: "website",
+    },
+  };
+}
+
+export default async function RankingPage({ searchParams }: Props) {
   const locale = await getServerLocale();
   const t = getT(locale);
-  const { season, year } = getCurrentAniListSeason();
+  const seasonInfo = await resolveSeasonInfo(searchParams);
+  const seasonAnimeLabel = formatSeasonAnimeLabel(seasonInfo, locale);
 
   const [popular, topRated, trending] = await Promise.all([
-    getRankingAnime(["POPULARITY_DESC"], { season, year, perPage: 10 }),
+    getRankingAnime(["POPULARITY_DESC"], { season: seasonInfo.season, year: seasonInfo.year, perPage: 10 }),
     getRankingAnime(["SCORE_DESC"], { perPage: 10 }),
-    getRankingAnime(["TRENDING_DESC"], { season, year, perPage: 10 }),
+    getRankingAnime(["TRENDING_DESC"], { season: seasonInfo.season, year: seasonInfo.year, perPage: 10 }),
   ]);
 
   return (
@@ -47,11 +59,14 @@ export default async function RankingPage() {
           <Breadcrumb items={[{ label: "ランキング", href: "/ranking" }]} />
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
-              🏆 {locale === "en" ? "Rankings" : "ランキング"}
+              🏆 {seasonAnimeLabel} {locale === "en" ? "Rankings" : "ランキング"}
             </h1>
             <p className="mt-1 text-sm text-text-sub">
               {locale === "en" ? "Top anime by popularity, score, and trending" : "人気・評価・トレンドで見るアニメランキング"}
             </p>
+            <div className="mt-4">
+              <SeasonNav current={seasonInfo} basePath="/ranking" />
+            </div>
           </div>
           <RankingTabs popular={popular} topRated={topRated} trending={trending} />
         </div>

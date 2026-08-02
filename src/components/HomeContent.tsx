@@ -4,17 +4,25 @@ import Link from "next/link";
 import Telop from "./Telop";
 import Carousel from "./Carousel";
 import AnimeImage from "./AnimeImage";
+import SeasonNav from "./SeasonNav";
 import { GENRES } from "@/constants/genres";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { type SeasonInfo, formatSeasonAnimeLabel } from "@/lib/season";
 import type { Anime } from "@/types/anime";
 
 type Props = {
   animeList: Anime[];
   allAnimeList: Anime[];
+  seasonInfo: SeasonInfo;
 };
 
-export default function HomeContent({ animeList, allAnimeList }: Props) {
+export default function HomeContent({ animeList, allAnimeList, seasonInfo }: Props) {
   const { t, locale } = useLanguage();
+  const seasonAnimeLabel = formatSeasonAnimeLabel(seasonInfo, locale);
+  // クール軸を前面に出した見出し（「2026年夏アニメ」を主役にする）
+  const featuredTitle =
+    locale === "ja" ? `🔥 ${seasonAnimeLabel}の注目作品` : `🔥 Featured ${seasonAnimeLabel}`;
+  const gridTitle = locale === "ja" ? `${seasonAnimeLabel} 一覧` : `${seasonAnimeLabel} List`;
 
   // ジャンルラベル翻訳
   const GENRE_EN: Record<string, string> = {
@@ -91,6 +99,14 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
             ))}
           </div>
 
+          {/* 現在のクールを明示するバッジ */}
+          <span
+            className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-sm font-bold text-accent"
+            style={{ animation: "fadeInUp 0.6s ease-out 0s both" }}
+          >
+            🎬 {seasonAnimeLabel}
+          </span>
+
           <h1
             className="text-3xl font-bold leading-tight md:text-5xl"
             style={{ animation: "fadeInUp 0.6s ease-out 0.1s both" }}
@@ -130,6 +146,11 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
               {t("home", "animeListBtn")}
             </Link>
           </div>
+
+          {/* クール切り替え導線（前クール/次クール/季節選択） */}
+          <div className="mt-6" style={{ animation: "fadeInUp 0.6s ease-out 0.6s both" }}>
+            <SeasonNav current={seasonInfo} basePath="/" />
+          </div>
         </section>
 
         {/* ジャンルタグ */}
@@ -153,7 +174,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
         {/* 今季注目作品カルーセル */}
         <section className="mx-auto max-w-6xl px-4 pb-16">
           <h2 className="mb-6 text-lg font-bold md:text-xl">
-            {t("home", "featuredTitle")}
+            {featuredTitle}
           </h2>
           <Carousel>
             {animeList.map((anime) => (
@@ -187,7 +208,7 @@ export default function HomeContent({ animeList, allAnimeList }: Props) {
         {/* 今季全作品グリッド */}
         <section className="mx-auto max-w-6xl px-4 pb-16">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-lg font-bold md:text-xl">{t("home", "gridTitle")}</h2>
+            <h2 className="text-lg font-bold md:text-xl">{gridTitle}</h2>
             <span className="text-sm text-text-sub">
               {allAnimeList.length} {t("home", "countUnit")}
             </span>

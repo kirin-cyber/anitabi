@@ -1,29 +1,55 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import HomeContent from "@/components/HomeContent";
-
-export const metadata: Metadata = {
-  title: "AniTabi - アニメ診断でおすすめアニメを見つけよう【2026年最新】",
-  description: "アニメ診断で好みのアニメをサクッと発見。2026年最新アニメ一覧・声優プロフィール・ランキングをまとめてチェック。",
-  openGraph: {
-    title: "AniTabi - アニメ診断でおすすめアニメを見つけよう【2026年最新】",
-    description: "アニメ診断で好みのアニメをサクッと発見。2026年最新アニメ一覧・声優プロフィール・ランキングをまとめてチェック。",
-    url: "https://anitabi.site",
-    type: "website",
-  },
-};
 import { DUMMY_ANIME } from "@/constants/dummy-anime";
-import { getSeasonWorks, getCurrentSeason } from "@/lib/annict";
+import { getSeasonWorks } from "@/lib/annict";
 import { toAnime } from "@/lib/annict-helpers";
 import { getAnimeBySeason, searchAnimeByTitle } from "@/lib/anilist";
+import {
+  type SeasonInfo,
+  getCurrentSeasonInfo,
+  shiftSeasonInfo,
+  parseSeasonQuery,
+  toAnnictSeasonString,
+  formatSeasonAnimeLabel,
+} from "@/lib/season";
 import type { Anime } from "@/types/anime";
 
-export default async function Home() {
+type Props = {
+  searchParams: Promise<{ year?: string; season?: string }>;
+};
+
+// URLクエリ（year, season）から表示対象のクールを決定。指定がなければ現在のクール
+async function resolveSeasonInfo(searchParams: Props["searchParams"]): Promise<SeasonInfo> {
+  const params = await searchParams;
+  return parseSeasonQuery(params.year, params.season) ?? getCurrentSeasonInfo();
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const seasonInfo = await resolveSeasonInfo(searchParams);
+  const seasonLabel = formatSeasonAnimeLabel(seasonInfo, "ja");
+  const title = `AniTabi - ${seasonLabel}を診断で見つけよう【最新】`;
+  const description = `${seasonLabel}の一覧をクール軸でチェック。アニメ診断で好みの作品もサクッと発見・声優プロフィール・ランキングもまとめて見られます。`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: "https://anitabi.site",
+      type: "website",
+    },
+  };
+}
+
+export default async function Home({ searchParams }: Props) {
+  const seasonInfo = await resolveSeasonInfo(searchParams);
+
   // Annict APIからリアルデータ取得（50件）
   let animeList: Anime[];
   let allAnimeList: Anime[];
   try {
-    const works = await getSeasonWorks(getCurrentSeason(), 50);
+    const works = await getSeasonWorks(toAnnictSeasonString(seasonInfo), 50);
     if (works.length > 0) {
       allAnimeList = works.map(toAnime);
       animeList = allAnimeList.slice(0, 10);
@@ -36,14 +62,15 @@ export default async function Home() {
     allAnimeList = animeList;
   }
 
-  // 画像が空のアニメをAniList画像で補完
+  // 画像が空のアニメをAniList画像で補完（表示中クール＋前クールから拾う）
   try {
-    const [spring1, spring2, winter] = await Promise.all([
-      getAnimeBySeason(2026, "SPRING", 1),
-      getAnimeBySeason(2026, "SPRING", 2),
-      getAnimeBySeason(2025, "FALL", 1),
+    const prevSeasonInfo = shiftSeasonInfo(seasonInfo, -1);
+    const [page1, page2, prevPage1] = await Promise.all([
+      getAnimeBySeason(seasonInfo.year, seasonInfo.season, 1),
+      getAnimeBySeason(seasonInfo.year, seasonInfo.season, 2),
+      getAnimeBySeason(prevSeasonInfo.year, prevSeasonInfo.season, 1),
     ]);
-    const anilistWorks = [...spring1, ...spring2, ...winter];
+    const anilistWorks = [...page1, ...page2, ...prevPage1];
     const normalize = (s: string) =>
       s.replace(/\s/g, "").replace(/[第話期クール0-9]/g, "").toLowerCase();
     const imgMap = new Map<string, string>();
@@ -97,7 +124,7 @@ export default async function Home() {
   return (
     <>
       <Header />
-      <HomeContent animeList={animeList} allAnimeList={allAnimeList} />
+      <HomeContent animeList={animeList} allAnimeList={allAnimeList} seasonInfo={seasonInfo} />
     </>
   );
 }
