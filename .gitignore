@@ -43,3 +43,13 @@ next-env.d.ts
 # OMC internal files
 .omc/
 src/app/.omc/
+
+# sitemap（postbuild の next-sitemap が生成するビルド成果物）
+public/sitemap.xml
+public/sitemap-0.xml
+
+# Claude Code のローカル設定
+.claude/
+
+# Xボットの投稿ログ（実行時に生成される）
+scripts/x-bot/log/
