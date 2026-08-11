@@ -321,7 +321,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                     );
                   })}
                 </div>
-                <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
+                <h1 className="text-2xl font-bold text-text-main break-words sm:text-3xl">
                   {title}
                 </h1>
                 {subtitle && subtitle !== title && (
@@ -337,7 +337,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                 {anime.averageScore != null && anime.averageScore > 0 && (
                   <div className="flex items-center gap-2">
                     <span className="text-text-sub">{t("detail", "score")}</span>
-                    <span className="font-bold text-accent">
+                    <span className="font-bold text-accent-text">
                       ★ {anime.averageScore}
                     </span>
                   </div>
@@ -395,7 +395,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                     <span className="text-sm font-medium text-text-main">
                       {nextEpLabel}
                     </span>
-                    <span className="ml-auto shrink-0 text-sm font-bold text-accent">
+                    <span className="ml-auto shrink-0 text-sm font-bold text-accent-text">
                       {remainLabel}
                     </span>
                   </div>
@@ -408,7 +408,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                   <h2 className="mb-2 text-sm font-bold text-text-sub">
                     {t("detail", "synopsis")}
                   </h2>
-                  <p className="leading-relaxed text-text-main">
+                  <p className="max-w-[34em] leading-relaxed text-text-main">
                     {description}
                   </p>
                 </div>
@@ -565,7 +565,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                         style={{ width: `${anime.averageScore}%` }}
                       />
                     </div>
-                    <span className="text-lg font-bold text-accent">
+                    <span className="text-lg font-bold text-accent-text">
                       {anime.averageScore}
                     </span>
                   </div>
@@ -660,7 +660,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                     <Link
                       key={r.id}
                       href={`/anime/${r.id}`}
-                      className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-all duration-300 hover:border-accent/50 hover:scale-[1.01] hover:shadow-md"
+                      className="group overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-[transform,box-shadow] duration-300 hover:border-accent/50 hover:scale-[1.01] hover:shadow-md"
                     >
                       <div className="relative h-36 overflow-hidden bg-background">
                         <AnimeImage
@@ -669,7 +669,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                           className="h-full w-full transition-transform duration-300 group-hover:scale-105"
                         />
                         {r.score > 0 && (
-                          <span className="absolute right-2 top-2 rounded-lg bg-background/80 px-2 py-0.5 text-xs font-bold text-accent backdrop-blur-sm">
+                          <span className="absolute right-2 top-2 rounded-lg bg-background/80 px-2 py-0.5 text-xs font-bold text-accent-text backdrop-blur-sm">
                             ★ {r.score}
                           </span>
                         )}
@@ -680,7 +680,7 @@ export default async function AnimeDetailPage({ params }: Props) {
                           {r.reasons.map((reason) => (
                             <span
                               key={reason}
-                              className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent"
+                              className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent-text"
                             >
                               {REASON_LABELS[reason]}
                             </span>

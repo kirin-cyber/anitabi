@@ -101,7 +101,7 @@ export default function HomeContent({ animeList, allAnimeList, seasonInfo }: Pro
 
           {/* 現在のクールを明示するバッジ */}
           <span
-            className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-sm font-bold text-accent"
+            className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-sm font-bold text-accent-text"
             style={{ animation: "fadeInUp 0.6s ease-out 0s both" }}
           >
             🎬 {seasonAnimeLabel}
@@ -113,7 +113,7 @@ export default function HomeContent({ animeList, allAnimeList, seasonInfo }: Pro
           >
             {t("home", "tagline1")}
             <br />
-            <span className="text-accent">{t("home", "tagline2")}</span>
+            <span className="text-accent-text">{t("home", "tagline2")}</span>
           </h1>
           <p
             className="mx-auto mt-4 max-w-lg text-text-sub md:text-lg"
@@ -181,7 +181,7 @@ export default function HomeContent({ animeList, allAnimeList, seasonInfo }: Pro
               <Link
                 key={anime.id}
                 href={`/anime/search?title=${encodeURIComponent(anime.title)}`}
-                className="group w-[280px] shrink-0 snap-start overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-all duration-300 hover:border-accent/50 hover:scale-[1.02] hover:shadow-lg md:w-[320px]"
+                className="group w-[280px] shrink-0 snap-start overflow-hidden rounded-xl border border-text-sub/15 bg-card transition-[transform,box-shadow] duration-300 hover:border-accent/50 hover:scale-[1.02] hover:shadow-lg md:w-[320px]"
               >
                 <div className="aspect-video overflow-hidden bg-background">
                   <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
@@ -218,7 +218,7 @@ export default function HomeContent({ animeList, allAnimeList, seasonInfo }: Pro
               <Link
                 key={anime.id}
                 href={`/anime/search?title=${encodeURIComponent(anime.title)}`}
-                className="group flex items-start gap-3 overflow-hidden rounded-xl border border-text-sub/15 bg-card p-3 transition-all duration-300 hover:border-accent/50 hover:scale-[1.01] hover:shadow-md"
+                className="group flex items-start gap-3 overflow-hidden rounded-xl border border-text-sub/15 bg-card p-3 transition-[transform,box-shadow] duration-300 hover:border-accent/50 hover:scale-[1.01] hover:shadow-md"
               >
                 <div className="w-14 shrink-0 overflow-hidden rounded-lg bg-background" style={{ aspectRatio: "2/3" }}>
                   <AnimeImage src={anime.image} alt={anime.title} className="h-full w-full transition-transform duration-300 group-hover:scale-105" />

@@ -62,7 +62,7 @@ export default function SeasonNav({ current, basePath }: Props) {
         value={`${current.year}:${current.season.toLowerCase()}`}
         onChange={handleSelect}
         aria-label={label.select}
-        className="h-9 rounded-full border border-accent/50 bg-card px-4 text-sm font-bold text-accent focus:outline-none"
+        className="h-9 rounded-full border border-accent/50 bg-card px-4 text-sm font-bold text-accent-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       >
         {options.map((info) => {
           const q = seasonInfoToQuery(info);

@@ -8,6 +8,21 @@
   --color-text-main: #dce8ff;
   --color-text-sub: #7a90bc;
   --color-accent: #534AB7;
+  /* アクセント文字専用トークン（ダーク背景でtext-accent単体だと3:1未達のため+15%明度） */
+  --color-accent-text: #8680cc;
+
+  /* ジャンルバッジ用パレット（アクセント#534AB7の色相を起点に均等回転・彩度統一。
+     白文字との実測コントラストは全色4.5:1以上、ライト/ダーク共通値） */
+  --color-genre-1: #6961c0;
+  --color-genre-2: #984fb9;
+  --color-genre-3: #b24794;
+  --color-genre-4: #b84c58;
+  --color-genre-5: #92653a;
+  --color-genre-6: #6b712d;
+  --color-genre-7: #477930;
+  --color-genre-8: #317b46;
+  --color-genre-9: #30786f;
+  --color-genre-10: #4073a2;
 }
 
 /* ライトモード */
@@ -18,6 +33,8 @@ html.light {
   --color-text-main: #1a1a2e;
   --color-text-sub: #555a72;
   --color-accent: #534AB7;
+  /* ライトモードは背景が明るく既存accentのままで4.5:1以上クリアするため据え置き */
+  --color-accent-text: #534AB7;
 }
 
 @theme inline {
@@ -27,6 +44,17 @@ html.light {
   --color-text-main: var(--color-text-main);
   --color-text-sub: var(--color-text-sub);
   --color-accent: var(--color-accent);
+  --color-accent-text: var(--color-accent-text);
+  --color-genre-1: var(--color-genre-1);
+  --color-genre-2: var(--color-genre-2);
+  --color-genre-3: var(--color-genre-3);
+  --color-genre-4: var(--color-genre-4);
+  --color-genre-5: var(--color-genre-5);
+  --color-genre-6: var(--color-genre-6);
+  --color-genre-7: var(--color-genre-7);
+  --color-genre-8: var(--color-genre-8);
+  --color-genre-9: var(--color-genre-9);
+  --color-genre-10: var(--color-genre-10);
 
   --font-sans: var(--font-noto-sans-jp);
 
@@ -51,6 +79,10 @@ html.light {
 @keyframes pulseRing {
   0% { transform: scale(1); opacity: 0.6; }
   100% { transform: scale(1.6); opacity: 0; }
+}
+
+html, body {
+  overflow-x: clip;
 }
 
 body {
